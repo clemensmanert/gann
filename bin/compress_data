@@ -1,0 +1,41 @@
+#!/usr/bin/env python3
+
+import argparse
+import ast
+import sys
+
+from gann.offer import offer_bitcoin_de
+from gann.offer_serialization import serialize
+
+
+def main():
+    parser = argparse.ArgumentParser(description="""Compress data gathered from
+    bitcoind.de and save it less space consuming""")
+
+    parser.add_argument('inputs', metavar='INPUT_FILE',
+                        type=argparse.FileType('r'),
+                        nargs='+',
+                        help='A path to read the raw data.')
+
+    parser.add_argument('--output', metavar='OUTPUT_FILE',
+                        type=argparse.FileType('wb+'),
+                        default='offers_small',
+                        help='A path to store the binary serialised data.')
+
+    args = parser.parse_args()
+
+    for fin in args.inputs:
+        for line in fin:
+            try:
+                offer_json = ast.literal_eval(line)
+                if not 'added' in offer_json:
+                    continue
+
+                offer = offer_bitcoin_de(offer_json['added'])
+                args.output.write(serialize(offer))
+            except BaseException as e:
+                print("%s while parsing line '%s'" % (e, line),
+                      file=sys.stderr)
+
+if __name__ == "__main__":
+    main()

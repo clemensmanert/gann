@@ -1,0 +1,41 @@
+#!/usr/bin/env python3
+
+import argparse
+import sys
+import datetime
+from socketIO_client import SocketIO, LoggingNamespace
+
+from gann.offer import offer_bitcoin_de
+from gann.offer_serialization import serialize
+
+
+def main():
+    parser = argparse.ArgumentParser(description="""Sniffer data about proposed
+    offers from bitcoind.de.""")
+
+    parser.add_argument('--output', metavar='OUTPUT_FILE',
+                        type=argparse.FileType('w+'),
+                        nargs=1,
+                        default='offers',
+                        help='Where to store the sniffed offers.')
+
+    args = parser.parse_args()
+
+    try:
+        socketIO = SocketIO('https://ws.bitcoin.de', 443, LoggingNamespace)
+        socketIO.on('add_order', lambda *offer_args: args.output.write(str({
+            'time': datetime.datetime.utcnow().isoformat(),
+            'added': offer_args[0]
+        })+"\n"))
+        socketIO.on('remove_order', lambda *offer_args: args.output.write(str({
+            'time': datetime.datetime.utcnow().isoformat(),
+            'removed': offer_args[0]
+        })+"\n"))
+        socketIO.wait()
+    except BaseException as e:
+        print("%s" % e, file=sys.stderr)
+
+if __name__ == "__main__":
+    main()
+
+

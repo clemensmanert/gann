@@ -6,6 +6,21 @@ class OrderType(Enum):
     BUY = "buy"
     SELL = "sell"
 
+def offer_bitcoin_de(offer_dict):
+    """Factory method to create an offer using the data  provided by
+    bitcoin.de's websocket.
+        :param dict offer_dict: Containing the keys least oder_id, amount,
+    min_amount, price, oder_type. All values should be strings.
+    """
+    return Offer(
+        offer_dict['order_id'],
+        float(offer_dict['amount']),
+        float(offer_dict['min_amount']),
+        int(float(offer_dict['price']) * 100),
+        OrderType(offer_dict['order_type']),
+        TradingPair(offer_dict['trading_pair'])
+    )
+
 class Offer:
     """ An Offer to buy or sell coins. """
     def __init__(self, order_id, amount, min_amount, price, order_type,
