@@ -45,9 +45,9 @@ class Offer:
         self.trading_pair = TradingPair(trading_pair)
 
     def __str__(self):
-        return "#%s %f for %f € of %s" % (self.order_id,
+        return "#%s %10.6f for %.2f € of %s" % (self.order_id,
                                           self.amount,
-                                          self.price,
+                                          self.price/100.0,
                                           self.trading_pair)
 
     def __repr__(self):

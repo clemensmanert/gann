@@ -38,28 +38,30 @@ class Trader:
             self.lowest_price_selling = offer.price
 
         if offer.price * offer.min_amount > self.conditions.max_price():
-            LOGGER.info("Don't buy offer %s because the min amount "
-                        "is too high.", offer)
+            LOGGER.info("%s Don't buy because the min amount "
+                        "is too hight.", offer)
             return
 
         if offer.price * offer.amount < self.conditions.min_price():
-            LOGGER.info("Don't buy offer %s because the amount is "
+            LOGGER.info("%s Don't buy because the amount is "
                         "too small.", offer)
             return
 
         if any(self.depot):
             if offer.price > (self.last_purchase_price
                               - self.conditions.step_price):
-                LOGGER.info("Don't buy offer %s because price is too close "
-                            "to the last purchase. %i", offer,
-                            self.last_purchase_price)
+                LOGGER.info("%s Don't buy because price is too close "
+                            "to the last purchase. %.2f", offer,
+                            self.last_purchase_price/100.0)
                 return
         else:
-            LOGGER.info("hightest price buying: %i", self.highest_price_buying)
             if offer.price > (self.highest_price_buying -
                               self.conditions.turnaround_price):
-                LOGGER.info("Don't buy offer %s because the turnaround has not "
-                            "been reached.", offer)
+                LOGGER.info("%s Don't buy because the turnaround %.2f has not "
+                            "been reached.",
+                            offer,
+                            (self.highest_price_buying
+                             - self.conditions.turnaround_price) / 100.0)
                 return
 
         amount = self.conditions.amount_price / offer.price
@@ -68,7 +70,7 @@ class Trader:
             amount = offer.min_amount
 
         if amount * offer.price > self.money:
-            LOGGER.info("Don't buy offer %s because there is too little money.",
+            LOGGER.info("%s Don't buy because there is not enough money left.",
                         offer)
             return
 
@@ -77,8 +79,8 @@ class Trader:
 
         self.money -= amount * offer.price
         self.last_purchase_price = offer.price
-        LOGGER.info("Bought %f of %s, money left: %i", amount,
-                    offer, self.money)
+        LOGGER.info("%s Bought %f, money left: %i",
+                    offer, amount, self.money)
 
 
         if offer.price in self.depot:
@@ -115,7 +117,11 @@ class Trader:
 
         # Exit if we do not have enough in depot to make a profitalbe deal
         if offer.min_amount > amount:
-            LOGGER.info("Don't sell to %s because we only have %i "
+            if amount == 0:
+                LOGGER.info("%s Don't sell because we have nothing to make "
+                            "profit.", offer)
+            else:
+                LOGGER.info("%s Don't sell because we only have %i "
                         "to make profit.", offer, amount)
             return
 
