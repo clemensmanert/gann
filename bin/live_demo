@@ -65,7 +65,10 @@ class Demo:
     def add_order(self, *args):
         self.trader.process_offer(offer_bitcoin_de(args[0]))
         self.state_out.seek(0)
-        self.state_out.write({'money': self.trader.money, 'depot': self.trader.depot}.__str__())
+        self.state_out.write(str({'money': self.trader.money,
+                                  'depot': self.trader.depot}))
+        # flush everythin else if previously written depot was larger.
+        self.state_out.truncate()
 
     def remove_order(self, *args):
         pass
