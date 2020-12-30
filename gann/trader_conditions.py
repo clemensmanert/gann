@@ -7,6 +7,7 @@ class TradingPair(Enum):
     BSVEUR = 'bsveur'
     BCHEUR = 'bcheur'
     BTGEUR = 'btgeur'
+    LTCEUR = 'ltceur'
     UNKNOWN = 'unknown'
 
 class TraderConditions:
