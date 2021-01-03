@@ -66,6 +66,9 @@ class Trader:
 
         amount = self.conditions.amount_price / offer.price
 
+        # Many platforms do not accept to obscure numbers.
+        amount = round(amount, 2)
+
         if amount < offer.min_amount:
             amount = offer.min_amount
 
@@ -114,6 +117,9 @@ class Trader:
                 amount += self.depot[prices[0]]
                 consumed.append(prices[0])
                 del prices[0]
+
+        # Many platforms do not accept to obscure numbers.
+        amount = round(amount, 2)
 
         # Exit if we do not have enough in depot to make a profitalbe deal
         if offer.min_amount > amount:

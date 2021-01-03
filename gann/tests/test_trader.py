@@ -85,7 +85,7 @@ class TestTrader(unittest.TestCase):
                                              price=4500_00,
                                              order_type=OrderType.SELL))
         self.assertEqual(self.trader.depot, {5000_00: 0.01,
-                                             4500_00: 0.022222222222222223})
+                                             4500_00: 0.02})
 
     def test_buy_another_fitting_offer(self):
         """ Expect trader to buy two offers in a row if each one's
@@ -95,15 +95,15 @@ class TestTrader(unittest.TestCase):
                                              order_type=OrderType.SELL))
 
         self.assertEqual(self.trader.depot, {5000_00: 0.01,
-                                             4990_00: 0.02004008016032064})
+                                             4990_00: 0.02})
 
         self.trader.process_offer(self.offer(amount=10,
                                              price=4980_00,
                                              order_type=OrderType.SELL))
 
         self.assertEqual(self.trader.depot, {5000_00: 0.01,
-                                             4990_00: 0.02004008016032064,
-                                             4980_00: 0.020080321285140562})
+                                             4990_00: 0.02,
+                                             4980_00: 0.02})
 
     def test_buy_if_min_amount_gt_amount_price_allows(self):
         """ Expects to buy the min amount, if it is still in range but the
@@ -115,7 +115,7 @@ class TestTrader(unittest.TestCase):
                                              order_type=OrderType.SELL))
 
         self.assertEqual(self.trader.depot, {5000_00: 0.01,
-                                             4000_00: 0.026})
+                                             4000_00: 0.03})
 
 
     def test_ignore_too_little_amouint(self):
@@ -192,8 +192,8 @@ class TestTrader(unittest.TestCase):
         # Declining prices
         self.trader.process_offer(self.offer(OrderType.SELL, 6000_00, 1))
         # Expect a position for last offer
-        self.assertEqual(self.trader.depot, {6000_00:  0.016666666666666666})
-        self.assertEqual(self.trader.money, 900_00)
+        self.assertEqual(self.trader.depot, {6000_00:  0.02})
+        self.assertEqual(self.trader.money, 880_00)
 
 
     def test_not_tobuy_when_there_is_no_turnaround(self):
