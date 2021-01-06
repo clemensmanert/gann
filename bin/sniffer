@@ -1,41 +1,38 @@
 #!/usr/bin/env python3
 
-import argparse
 import sys
+import argparse
+
 import datetime
+
 from socketIO_client import SocketIO, LoggingNamespace
 
 from gann.offer import offer_bitcoin_de
-from gann.offer_serialization import serialize
-
+from gann.removal import removal_bitcoin_de
+from gann.serialization import serialize_offer_to, serialize_removal_to
 
 def main():
     parser = argparse.ArgumentParser(description="""Sniffer data about proposed
     offers from bitcoind.de.""")
 
     parser.add_argument('--output', metavar='OUTPUT_FILE',
-                        type=argparse.FileType('w+'),
+                        type=argparse.FileType('ab'),
                         nargs=1,
                         default='offers',
                         help='Where to store the sniffed offers.')
 
     args = parser.parse_args()
 
-    try:
-        socketIO = SocketIO('https://ws.bitcoin.de', 443, LoggingNamespace)
-        socketIO.on('add_order', lambda *offer_args: args.output.write(str({
-            'time': datetime.datetime.utcnow().isoformat(),
-            'added': offer_args[0]
-        })+"\n"))
-        socketIO.on('remove_order', lambda *offer_args: args.output.write(str({
-            'time': datetime.datetime.utcnow().isoformat(),
-            'removed': offer_args[0]
-        })+"\n"))
-        socketIO.wait()
-    except BaseException as e:
-        print("%s" % e, file=sys.stderr)
+    socketIO = SocketIO('https://ws.bitcoin.de', 443, LoggingNamespace)
+
+    socketIO.on('add_order', lambda *offer_args:(
+        serialize_offer_to(offer_bitcoin_de( offer_args[0]),
+                            args.output[0])))
+    socketIO.on('remove_order', lambda *offer_args: (
+        serialize_removal_to(removal_bitcoin_de(offer_args[0]),
+                              args.output[0] )))
+
+    socketIO.wait()
 
 if __name__ == "__main__":
     main()
-
-

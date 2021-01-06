@@ -2,9 +2,13 @@ from enum import Enum, unique
 from gann.trader_conditions import TradingPair
 
 @unique
-class OrderType(Enum):
+class OfferType(Enum):
+    """Specifies the type of an offer `sell` or `buy`."""
     BUY = "buy"
     SELL = "sell"
+
+    def __str__(self):
+        return str(self.value)
 
 def offer_bitcoin_de(offer_dict):
     """Factory method to create an offer using the data  provided by
@@ -17,13 +21,13 @@ def offer_bitcoin_de(offer_dict):
         float(offer_dict['amount']),
         float(offer_dict['min_amount']),
         int(float(offer_dict['price']) * 100),
-        OrderType(offer_dict['order_type']),
+        OfferType(offer_dict['order_type']),
         TradingPair(offer_dict['trading_pair'])
     )
 
 class Offer:
     """ An Offer to buy or sell coins. """
-    def __init__(self, order_id, amount, min_amount, price, order_type,
+    def __init__(self, order_id, amount, min_amount, price, offer_type,
                  trading_pair):
         """Creates an offer.
         :param str order_id: The order's id.
@@ -31,7 +35,7 @@ class Offer:
         :param float min_amount: The minimum amount of coins the vendor is
         willing to trade.
         :param int price: The offer's price as per coin in cents.
-        :param OrderType oder_type: Indicates wether the offer creater  wants to
+        :param OfferType oder_type: Indicates wether the offer creater  wants to
         sell or buy.
         :param TradingPair trading_pair: Specifies the type of coins this offer
         is about.
@@ -41,19 +45,24 @@ class Offer:
         self.amount = amount
         self.min_amount = min_amount
         self.price = price
-        self.type = OrderType(order_type)
+        self.type = OfferType(offer_type)
         self.trading_pair = TradingPair(trading_pair)
 
     def __str__(self):
         return "#%s %10.6f for %.2f € of %s" % (self.order_id,
-                                          self.amount,
-                                          self.price/100.0,
-                                          self.trading_pair)
-
-    def __repr__(self):
-        return self.__str__()
-
+                                                self.amount,
+                                                self.price/100.0,
+                                                self.trading_pair)
     def __eq__(self, other):
+        if other is None:
+            return False
+
+        if self  is other:
+            return  True
+
+        if not isinstance(other, Offer):
+            return False
+
         return (self.order_id == other.order_id and
                 self.amount == other.amount and
                 self.min_amount == other.min_amount and

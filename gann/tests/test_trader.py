@@ -2,7 +2,7 @@ import unittest
 import logging
 import sys
 
-from gann.offer import Offer, OrderType
+from gann.offer import Offer, OfferType
 from gann.trader import Trader
 from gann.trader_conditions import TraderConditions, TradingPair
 
@@ -23,7 +23,7 @@ class TestBroker:
 class TestTrader(unittest.TestCase):
 
     def offer(self,
-              order_type,
+              offer_type,
               price,
               amount=2,
               min_amount=0.0,
@@ -36,7 +36,7 @@ class TestTrader(unittest.TestCase):
             amount=amount,
             min_amount=min_amount,
             price=price,
-            order_type=order_type,
+            offer_type=offer_type,
             trading_pair=trading_pair)
 
     def setUp(self):
@@ -54,7 +54,7 @@ class TestTrader(unittest.TestCase):
             self.offer(amount=10,
                        min_amount=0.01,
                        price=123_00,
-                       order_type=OrderType.SELL,
+                       offer_type=OfferType.SELL,
                        trading_pair=TradingPair.BTGEUR))
 
         self.assertEqual(self.trader.depot, {5000_00: 0.01})
@@ -64,7 +64,7 @@ class TestTrader(unittest.TestCase):
         self.trader.process_offer(self.offer(amount=10,
                                              min_amount=1,
                                              price=999900,
-                                             order_type=OrderType.SELL))
+                                             offer_type=OfferType.SELL))
         self.assertEqual(self.trader.depot, {5000_00: 0.01})
 
 
@@ -73,7 +73,7 @@ class TestTrader(unittest.TestCase):
         too_high_min_amount = self.offer(amount=100,
                                          min_amount=10,
                                          price=400000,
-                                         order_type=OrderType.SELL)
+                                         offer_type=OfferType.SELL)
         self.trader.process_offer(too_high_min_amount)
 
         self.assertEqual(len(self.trader.depot), 1)
@@ -83,7 +83,7 @@ class TestTrader(unittest.TestCase):
         last_bought_price - `step_size` """
         self.trader.process_offer(self.offer(amount=10,
                                              price=4500_00,
-                                             order_type=OrderType.SELL))
+                                             offer_type=OfferType.SELL))
         self.assertEqual(self.trader.depot, {5000_00: 0.01,
                                              4500_00: 0.02})
 
@@ -92,14 +92,14 @@ class TestTrader(unittest.TestCase):
         price is less than last_bought_price -  `step_price` """
         self.trader.process_offer(self.offer(amount=10,
                                              price=4990_00,
-                                             order_type=OrderType.SELL))
+                                             offer_type=OfferType.SELL))
 
         self.assertEqual(self.trader.depot, {5000_00: 0.01,
                                              4990_00: 0.02})
 
         self.trader.process_offer(self.offer(amount=10,
                                              price=4980_00,
-                                             order_type=OrderType.SELL))
+                                             offer_type=OfferType.SELL))
 
         self.assertEqual(self.trader.depot, {5000_00: 0.01,
                                              4990_00: 0.02,
@@ -112,7 +112,7 @@ class TestTrader(unittest.TestCase):
         self.trader.process_offer(self.offer(amount=10,
                                              min_amount=0.026,
                                              price=4000_00,
-                                             order_type=OrderType.SELL))
+                                             offer_type=OfferType.SELL))
 
         self.assertEqual(self.trader.depot, {5000_00: 0.01,
                                              4000_00: 0.03})
@@ -125,7 +125,7 @@ class TestTrader(unittest.TestCase):
                 amount=0.5,
                 min_amount=0.01,
                 price=10,
-                order_type=OrderType.SELL))
+                offer_type=OfferType.SELL))
         self.assertEqual(len(self.trader.depot), 1)
 
     def test_expect_not_to_sell_if_price_is_outisde_delta(self):
@@ -137,7 +137,7 @@ class TestTrader(unittest.TestCase):
             amount=2.5,
             min_amount=0.01,
             price=0.01,
-            order_type=OrderType.SELL))
+            offer_type=OfferType.SELL))
 
         self.assertEqual(len(self.trader.depot), 2)
 
@@ -151,7 +151,7 @@ class TestTrader(unittest.TestCase):
             amount=2.5,
             min_amount=0.01,
             price=5000_00,
-            order_type=OrderType.BUY))
+            offer_type=OfferType.BUY))
 
         self.assertEqual(self.trader.depot, {5000_00: 0.01})
 
@@ -163,7 +163,7 @@ class TestTrader(unittest.TestCase):
             amount=2.5,
             min_amount=2.5,
             price=6000_00,
-            order_type=OrderType.BUY))
+            offer_type=OfferType.BUY))
 
         self.assertEqual(self.trader.depot, {5000_00: 0.01})
 
@@ -172,25 +172,25 @@ class TestTrader(unittest.TestCase):
         turnaround is reached."""
         self.trader = Trader(broker=TestBroker(), money=1000_00)
 
-        self.trader.process_offer(self.offer(OrderType.SELL, 7000_00, 1))
+        self.trader.process_offer(self.offer(OfferType.SELL, 7000_00, 1))
         self.assertEqual(self.trader.depot, dict())
         self.assertEqual(self.trader.money, 1000_00)
 
-        self.trader.process_offer(self.offer(OrderType.BUY, 6050_00, 1))
+        self.trader.process_offer(self.offer(OfferType.BUY, 6050_00, 1))
         self.assertEqual(self.trader.depot, dict())
         self.assertEqual(self.trader.money, 1000_00)
 
         # Local maximum
-        self.trader.process_offer(self.offer(OrderType.SELL, 7100_00, 1))
+        self.trader.process_offer(self.offer(OfferType.SELL, 7100_00, 1))
         self.assertEqual(self.trader.depot, dict())
         self.assertEqual(self.trader.money, 1000_00)
 
-        self.trader.process_offer(self.offer(OrderType.BUY, 6150_00, 1))
+        self.trader.process_offer(self.offer(OfferType.BUY, 6150_00, 1))
         self.assertEqual(self.trader.depot, dict())
         self.assertEqual(self.trader.money, 1000_00)
 
         # Declining prices
-        self.trader.process_offer(self.offer(OrderType.SELL, 6000_00, 1))
+        self.trader.process_offer(self.offer(OfferType.SELL, 6000_00, 1))
         # Expect a position for last offer
         self.assertEqual(self.trader.depot, {6000_00:  0.02})
         self.assertEqual(self.trader.money, 880_00)
@@ -200,43 +200,43 @@ class TestTrader(unittest.TestCase):
         """Expects not to buy as long as no turnaround is reached."""
         self.trader = Trader(broker=TestBroker(), money=1000_00)
 
-        self.trader.process_offer(self.offer(OrderType.SELL, 7000_00, 1))
+        self.trader.process_offer(self.offer(OfferType.SELL, 7000_00, 1))
         self.assertEqual(self.trader.depot, dict())
         self.assertEqual(self.trader.money, 1000_00)
 
-        self.trader.process_offer(self.offer(OrderType.SELL, 7010_00, 1))
+        self.trader.process_offer(self.offer(OfferType.SELL, 7010_00, 1))
         self.assertEqual(self.trader.depot, dict())
         self.assertEqual(self.trader.money, 1000_00)
 
-        self.trader.process_offer(self.offer(OrderType.SELL, 8010_00, 1))
+        self.trader.process_offer(self.offer(OfferType.SELL, 8010_00, 1))
         self.assertEqual(self.trader.depot, dict())
         self.assertEqual(self.trader.money, 1000_00)
 
-        self.trader.process_offer(self.offer(OrderType.BUY, 6080_00, 1))
+        self.trader.process_offer(self.offer(OfferType.BUY, 6080_00, 1))
         self.assertEqual(self.trader.depot, dict())
         self.assertEqual(self.trader.money, 1000_00)
 
-        self.trader.process_offer(self.offer(OrderType.SELL, 6090_00, 1))
+        self.trader.process_offer(self.offer(OfferType.SELL, 6090_00, 1))
         self.assertEqual(self.trader.depot, dict())
         self.assertEqual(self.trader.money, 1000_00)
 
-        self.trader.process_offer(self.offer(OrderType.SELL, 8000_00, 1))
+        self.trader.process_offer(self.offer(OfferType.SELL, 8000_00, 1))
         self.assertEqual(self.trader.depot, dict())
         self.assertEqual(self.trader.money, 1000_00)
 
-        self.trader.process_offer(self.offer(OrderType.SELL, 9000_00, 1))
+        self.trader.process_offer(self.offer(OfferType.SELL, 9000_00, 1))
         self.assertEqual(self.trader.depot, dict())
         self.assertEqual(self.trader.money, 1000_00)
 
-        self.trader.process_offer(self.offer(OrderType.BUY, 5080_00, 1))
+        self.trader.process_offer(self.offer(OfferType.BUY, 5080_00, 1))
         self.assertEqual(self.trader.depot, dict())
         self.assertEqual(self.trader.money, 1000_00)
 
-        self.trader.process_offer(self.offer(OrderType.BUY, 6000_00, 1))
+        self.trader.process_offer(self.offer(OfferType.BUY, 6000_00, 1))
         self.assertEqual(self.trader.depot, dict())
         self.assertEqual(self.trader.money, 1000_00)
 
-        self.trader.process_offer(self.offer(OrderType.SELL, 8000_00, 1))
+        self.trader.process_offer(self.offer(OfferType.SELL, 8000_00, 1))
         self.assertEqual(self.trader.depot, dict())
         self.assertEqual(self.trader.money, 1000_00)
 

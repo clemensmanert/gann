@@ -1,7 +1,7 @@
 import logging
 import sys
 
-from gann.offer import OrderType
+from gann.offer import OfferType
 from gann.trader_conditions import TraderConditions
 
 LOGGER = logging.getLogger()
@@ -50,9 +50,15 @@ class Trader:
         if any(self.depot):
             if offer.price > (self.last_purchase_price
                               - self.conditions.step_price):
-                LOGGER.info("%s Don't buy because price is too close "
-                            "to the last purchase. %.2f", offer,
-                            self.last_purchase_price/100.0)
+
+                if offer.price > self.last_purchase_price:
+                    LOGGER.info("%s Don't buy because price is higher than "
+                                "the last purchase. %.2f", offer,
+                                self.last_purchase_price/100.0)
+                else:
+                    LOGGER.info("%s Don't buy because price is too close "
+                                "to the last purchase. %.2f", offer,
+                                self.last_purchase_price/100.0)
                 return
         else:
             if offer.price > (self.highest_price_buying -
@@ -146,10 +152,10 @@ class Trader:
         if offer.trading_pair != self.conditions.trading_pair:
             return
 
-        if offer.type == OrderType.BUY:
+        if offer.type == OfferType.BUY:
             # Someone wants to buy coins
             self.consider_sell(offer)
-        elif offer.type == OrderType.SELL:
+        elif offer.type == OfferType.SELL:
             # Someone wants to sell coins
             self.consider_buy(offer)
 
