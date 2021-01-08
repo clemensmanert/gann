@@ -1,4 +1,5 @@
 from enum import Enum, unique
+from datetime import datetime
 
 import struct
 from gann.offer import OfferType, Offer
@@ -38,8 +39,8 @@ INDEXES_TRADING_PAIRS_INDEXES = dict(zip(
 
 
 EVENT_TYPE_STRUCT = struct.Struct('i')
-OFFER_STRUCT = struct.Struct('6pdddii')
-REMOVAL_STRUCT = struct.Struct('6pi20p')
+OFFER_STRUCT = struct.Struct('6pdddiid')
+REMOVAL_STRUCT = struct.Struct('6pi20pd')
 
 def deserialize_event(buffer):
     """Serializes the one event from the given buffer"""
@@ -55,7 +56,8 @@ def deserialize_offer(buffer):
         min_amount=offer_bin[2],
         price=offer_bin[3],
         offer_type=OFFER_TYPES_BY_INDEXES[offer_bin[4]],
-        trading_pair=TRADING_PAIRS_BY_INDEXES[offer_bin[5]]
+        trading_pair=TRADING_PAIRS_BY_INDEXES[offer_bin[5]],
+        date=datetime.fromtimestamp(offer_bin[6])
     )
 
 def deserialize_removal(buffer):
@@ -64,7 +66,8 @@ def deserialize_removal(buffer):
     return Removal(
         order_id=removal_bin[0].decode(),
         offer_type=OFFER_TYPES_BY_INDEXES[removal_bin[1]],
-        reason=removal_bin[2].decode())
+        reason=removal_bin[2].decode(),
+        date=datetime.fromtimestamp(removal_bin[3]))
 
 def serialize_offer(offer):
     """Serialize a given offer into binary."""
@@ -74,7 +77,8 @@ def serialize_offer(offer):
         offer.min_amount,
         offer.price,
         INDEXES_BY_OFFER_TYPES[offer.type],
-        INDEXES_TRADING_PAIRS_INDEXES[offer.trading_pair])
+        INDEXES_TRADING_PAIRS_INDEXES[offer.trading_pair],
+        offer.date.timestamp())
 
 def serialize_removal(removal):
     """Serialize a given removal into binary."""
@@ -82,7 +86,8 @@ def serialize_removal(removal):
             + REMOVAL_STRUCT.pack(
                 removal.order_id.encode(),
                 INDEXES_BY_OFFER_TYPES[removal.offer_type],
-                removal.reason.encode()))
+                removal.reason.encode(),
+                removal.date.timestamp()))
 
 
 def serialize_offer_to(offer, buffer):

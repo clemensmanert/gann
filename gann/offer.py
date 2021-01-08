@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from enum import Enum, unique
 from gann.trader_conditions import TradingPair
 
@@ -28,7 +30,7 @@ def offer_bitcoin_de(offer_dict):
 class Offer:
     """ An Offer to buy or sell coins. """
     def __init__(self, order_id, amount, min_amount, price, offer_type,
-                 trading_pair):
+                 trading_pair, date=datetime.now()):
         """Creates an offer.
         :param str order_id: The order's id.
         :param float amount: The amount of coins which is offerd/asked for.
@@ -39,6 +41,7 @@ class Offer:
         sell or buy.
         :param TradingPair trading_pair: Specifies the type of coins this offer
         is about.
+        :param datetime date: The point in time when the offer appeared.
         """
 
         self.order_id = order_id
@@ -47,6 +50,7 @@ class Offer:
         self.price = price
         self.type = OfferType(offer_type)
         self.trading_pair = TradingPair(trading_pair)
+        self.date = date
 
     def __str__(self):
         return "#%s %10.6f for %.2f € of %s" % (self.order_id,
@@ -68,4 +72,5 @@ class Offer:
                 self.min_amount == other.min_amount and
                 self.price == other.price and
                 self.type == other.type and
-                self.trading_pair == other.trading_pair)
+                self.trading_pair == other.trading_pair and
+                self.date == other.date)

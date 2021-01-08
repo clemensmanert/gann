@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from gann.offer import OfferType
 
 def removal_bitcoin_de(removal_dict):
@@ -13,7 +15,7 @@ def removal_bitcoin_de(removal_dict):
 
 class Removal:
     """Describes an offer, which has been removed"""
-    def __init__(self, order_id, offer_type, reason):
+    def __init__(self, order_id, offer_type, reason, date=datetime.now()):
         """Creates a removal.
 
         :param str order_id: The order's id.
@@ -21,11 +23,13 @@ class Removal:
         wants to sell or buy.
         :param str type todo: fix this.
         :param str reason why it was removed.
+        :param datetime date Point in time when the offer was removed.
         """
 
         self.order_id = order_id
         self.offer_type = offer_type
         self.reason = reason
+        self.date = date
 
     def __str__(self):
         return "Removal %s %4s %s" % (self.order_id,
@@ -44,4 +48,5 @@ class Removal:
 
         return (self.order_id == other.order_id and
                 self.offer_type == other.offer_type and
-                self.reason == other.reason)
+                self.reason == other.reason and
+                self.date == other.date)

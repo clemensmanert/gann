@@ -3,6 +3,8 @@ import logging
 import sys
 import io
 
+from datetime import datetime, timedelta
+
 from gann.offer import Offer, OfferType
 from gann.removal import Removal
 from gann.trader_conditions import TradingPair
@@ -19,7 +21,8 @@ class TestSerialisation(unittest.TestCase):
               price,
               amount=2,
               min_amount=0.0,
-              trading_pair=TradingPair.BTCEUR):
+              trading_pair=TradingPair.BTCEUR,
+              date=datetime.now()):
         """Creates a new order for testing purposes"""
         self.offer_id += 1
 
@@ -29,7 +32,8 @@ class TestSerialisation(unittest.TestCase):
             min_amount=min_amount,
             price=price,
             offer_type=offer_type,
-            trading_pair=trading_pair)
+            trading_pair=trading_pair,
+            date=date)
 
     def setUp(self):
         self.offer_id = 0
@@ -39,7 +43,10 @@ class TestSerialisation(unittest.TestCase):
         When serializing an offer expect to get an equal offer when
         deserialzing it.
         """
-        expected = self.offer(OfferType.SELL, 1000_00, 2)
+        expected = self.offer(offer_type=OfferType.SELL,
+                              price=1000_00,
+                              amount=2,
+                              date=datetime.now() - timedelta(days=2))
 
         offer_buffer = io.BytesIO()
         serialize_offer_to(expected, offer_buffer)
@@ -55,7 +62,10 @@ class TestSerialisation(unittest.TestCase):
         When serializing an removal expect to get an equal offer when
         deserialzing it.
         """
-        expected = Removal("theId", OfferType.BUY, "reason")
+        expected = Removal("theId",
+                           OfferType.BUY,
+                           "reason",
+                           date=datetime.now() - timedelta(days=2))
 
         removal_buffer = io.BytesIO()
         serialize_removal_to(expected, removal_buffer)
