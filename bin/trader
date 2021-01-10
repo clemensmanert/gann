@@ -41,9 +41,17 @@ class TraderRunner:
 
         logging.getLogger().addHandler(
             logging.StreamHandler(LogHandler(self.trader)))
-        logging.getLogger().addHandler(logging.StreamHandler(log))
+        handler = logging.StreamHandler( log)
+        handler.setFormatter(logging.Formatter(
+            fmt='%(asctime)s %(levelname)-8s %(message)s',
+            datefmt='%Y-%m-%d %H:%M:%S')
+                             )
+
+        logging.getLogger().addHandler(handler)
 
         logging.getLogger().setLevel(logging.INFO)
+
+
         self.running = True
 
     def add_order(self, *args):
