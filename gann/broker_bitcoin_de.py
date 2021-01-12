@@ -43,7 +43,7 @@ class BrokerBitcoinDe:
         url = (self.API_URL + offer.trading_pair.value
                + "/trades/" + offer.order_id)
         data = {'type': "buy",
-                'payment_option': 1,
+                'payment_option': offer.payment_option,
                 'amount_currency_to_trade': amount}
         result = requests.post(url,
                                headers=self.post_headers(url, data))

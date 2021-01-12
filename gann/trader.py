@@ -124,9 +124,6 @@ class Trader:
                 consumed.append(prices[0])
                 del prices[0]
 
-        # Many platforms do not accept to obscure numbers.
-        amount = round(amount, 2)
-
         # Exit if we do not have enough in depot to make a profitalbe deal
         if offer.min_amount > amount:
             if amount == 0:
