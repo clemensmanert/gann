@@ -73,7 +73,12 @@ class Trader:
         amount = self.conditions.amount_price / offer.price
 
         # Many platforms do not accept to obscure numbers.
-        amount = round(amount, 2)
+        amount = round(amount, 4)
+
+        # If rounding was higher or lower than amount/min_amount
+        # use those values instead.
+        if amount > offer.amount:
+            amount = offer.amount
 
         if amount < offer.min_amount:
             amount = offer.min_amount
@@ -90,7 +95,6 @@ class Trader:
         self.last_purchase_price = offer.price
         LOGGER.info("%s Bought %f, money left: %i",
                     offer, amount, self.money)
-
 
         if offer.price in self.depot:
             self.depot[offer.price] += amount
@@ -133,6 +137,13 @@ class Trader:
                 LOGGER.info("%s Don't sell because we only have %i "
                         "to make profit.", offer, amount)
             return
+
+        # Many platforms do not accept to obscure numbers, so truncate after 4
+        amount = float("%.4f" % amount)
+
+        # If truncating lead to a number smaller than min amount, use it
+        if amount < offer.min_amount:
+            amount = offer.min_amount
 
         if not self.broker.try_sell(offer, amount):
             return
