@@ -37,8 +37,10 @@ class LogHandler:
 
 class TraderRunner:
     """ Runs a trader and prints trading activity."""
-    def __init__(self, trader, depot, log):
-        self.trader = trader
+    def __init__(self, traders, depot, log):
+        if traders.size != depots.size:
+            raise Error("Trader and depot sizes do not machts")
+        self.traders = traders
         self.depot = depot
 
         logging.getLogger().addHandler(
@@ -53,14 +55,16 @@ class TraderRunner:
 
         logging.getLogger().setLevel(logging.INFO)
 
-
         self.running = True
 
     def add_order(self, *args):
-        self.trader.process_offer(offer_bitcoin_de(args[0]))
-        self.depot.seek(0)
-        self.depot.write(str({'money': self.trader.money,
-                              'depot': self.trader.depot}))
+        for i in range(len(self.traders)):
+            trader = self.traders[i]
+            depot = self.depot[i]
+            trader.process_offer(offer_bitcoin_de(args[0]))
+            depot.seek(0)
+            depot.write(str({'money': self.trader.money,
+                             'depot': self.trader.depot}))
         # flush everythin else if previously written depot was larger.
         self.depot.truncate()
 
@@ -107,16 +111,6 @@ def main():
         print("%s does not exists." % dataDir, file=sys.stderr)
         sys.exit(1)
 
-    depotPath = dataDir / 'depot.json'
-    if not depotPath.exists():
-        print("%s does not exists." % depotPath, file=sys.stderr)
-        sys.exit(1)
-
-    depotFile = depotPath.open(mode='r+')
-    if not depotFile:
-        print("Can not open '%s' for writing." % depotPath, file=sys.stderr)
-        sys.exit(1)
-
     configFile = dataDir / "config.ini"
     if not configFile.exists():
         print("%s does not exists." % configFile, file=sys.stderr)
@@ -140,31 +134,49 @@ def main():
               "Exiting.", file=sys.stderr)
         sys.exit(1)
 
-    trader_conditions = TraderConditions(
-        config.getint('CONDITIONS', 'amount_price', fallback=100_00),
-        config.getint('CONDITIONS', 'amount_price_tolerance', fallback=20_00),
-        config.getint('CONDITIONS', 'min_profit_price', fallback=10_00),
-        config.getint('CONDITIONS', 'step_price', fallback=40_00),
-        config.getint('CONDITIONS', 'turnaround_price', fallback=10_00),
-        TradingPair(
-            config.get('CONDITIONS', 'trading_pair', fallback='btceur')))
-
-    start_data = ast.literal_eval(depotFile.read())
-    start_money = start_data.get('money', 0.0)
-    start_depot = start_data.get('depot', dict())
-
     broker_bitcoin_de = BrokerBitcoinDe(
         trading_log=tradingLogFile,
         api_key=config['bitcoin.de']['api_key'],
         secret=config['bitcoin.de']['secret'])
 
-    trader = Trader(money=start_money,
-                    depot=start_depot,
-                    broker=broker_bitcoin_de,
-                    conditions=trader_conditions)
+    traders = []
+    depot_fiels = []
 
-    runner = TraderRunner(trader=trader,
-                          depot=depotFile,
+    for section in config:
+        trader_conditions = TraderConditions(
+            config.getint(section, 'amount_price', fallback=100_00),
+            config.getint(section, 'amount_price_tolerance', fallback=20_00),
+            config.getint(section, 'min_profit_price', fallback=10_00),
+            config.getint(section, 'step_price', fallback=40_00),
+            config.getint(section, 'turnaround_price', fallback=10_00),
+        TradingPair(
+            config.get(section, 'trading_pair', fallback='btceur')))
+
+        depotPath = dataDir / (section+'_depot.json')
+        if not depotPath.exists():
+            print("%s does not exists." % depotPath, file=sys.stderr)
+            sys.exit(1)
+
+        depotFile = depotPath.open(mode='r+')
+        if not depotFile:
+            print("Can not open '%s' for writing." % depotPath, file=sys.stderr)
+            sys.exit(1)
+
+        start_data = ast.literal_eval(depotFile.read())
+        start_money = start_data.get('money', 0.0)
+        start_depot = start_data.get('depot', dict())
+
+        traders.push(Trader(money=start_money,
+                            depot=start_depot,
+                            broker=broker_bitcoin_de,
+                            conditions=trader_conditions))
+        depots.push(depotFile)
+
+
+    if traders.size() < 1:
+        print("No trader specification found in \"%s\"" % config_file)
+    runner = TraderRunner(traders=traders,
+                          depots=depot_files,
                           log=args.log_file)
 
     runner.run()

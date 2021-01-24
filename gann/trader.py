@@ -158,14 +158,15 @@ class Trader:
 
     def process_offer(self, offer):
         if offer.trading_pair != self.conditions.trading_pair:
-            return
+            return False;
 
         if offer.type == OfferType.BUY:
             # Someone wants to buy coins
-            self.consider_sell(offer)
+            return self.consider_sell(offer)
         elif offer.type == OfferType.SELL:
             # Someone wants to sell coins
-            self.consider_buy(offer)
+            return self.consider_buy(offer)
+        return False
 
     def __str__(self):
         m = self.money/100
