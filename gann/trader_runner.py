@@ -6,7 +6,7 @@ class TraderRunner:
     """ Runs a trader and prints trading activity."""
     def __init__(self, traders, depots, log):
         if len(traders) != len(depots):
-            raise Error("Trader and depot sizes do not machts")
+            raise Exception("Trader and depot sizes do not machts")
         self.traders = traders
         self.depots = depots
 

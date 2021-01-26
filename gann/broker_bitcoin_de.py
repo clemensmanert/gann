@@ -52,8 +52,8 @@ class BrokerBitcoinDe:
             print("Buying %s succeeded", self.trading_log)
             return True
 
-        LOGGER.error("Failed to buy %f as %s", amount, offer)
-        LOGGER.error("\t%i: %s", result.status_code, result.content)
+        LOGGER.error("Failed to buy %f as %s (%i) %s",
+                     amount, offer, result.status_code, result.content)
         return False
 
     def try_sell(self, offer, amount):
@@ -68,6 +68,6 @@ class BrokerBitcoinDe:
             print("Selling %s succeeded", self.trading_log)
             return True
 
-        LOGGER.error("Failed to sell %f as %s", amount, offer)
-        LOGGER.error("\t%i: %s", result.status_code, result.content)
+        LOGGER.error("Failed to sell %f as %s (%i) %s",
+                     amount, offer,result.status_code, result.content)
         return False
