@@ -31,6 +31,8 @@ class TraderRunner:
                                  'depot': trader.depot}))
                 # flush everythin else if previously written depot was larger.
                 depot.truncate()
+                # skip other traders, since this offers gone now
+                return
 
     def remove_order(self, *args):
         """Progress the removal of an order"""
