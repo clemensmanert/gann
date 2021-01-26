@@ -93,7 +93,7 @@ def main():
     parser.add_argument('--log-file', metavar='LOG_FILE',
                         type=argparse.FileType('a'),
                         nargs='?',
-                        default='trader_log.json',
+                        default='gann_log.json',
                         help='Where to append the logging.')
 
     args = parser.parse_args()
@@ -110,10 +110,10 @@ def main():
         sys.exit(1)
     tradersConfig.read(tradersFile)
 
-    tradingLogPath = dataDir / "trading.log"
-    tradingLogFile = tradingLogPath.open(mode='a')
-    if not tradingLogFile:
-        print("Can not open '%s' for writing." % tradingLogPath, file=sys.stderr)
+    executedTradesPath = dataDir / "executed_trades.log"
+    executedTradesFile = executedTradesPath.open(mode='a')
+    if not executedTradesFile:
+        print("Can not open '%s' for writing." % executedTradesPath, file=sys.stderr)
         sys.exit(1)
 
     if 'api_key' not in tradersConfig['DEFAULT']:
@@ -127,7 +127,7 @@ def main():
         sys.exit(1)
 
     broker_bitcoin_de = BrokerBitcoinDe(
-        trading_log=tradingLogFile,
+        trading_log=executedTradesFile,
         api_key=tradersConfig['DEFAULT']['api_key'],
         secret=tradersConfig['DEFAULT']['secret'])
 
@@ -166,7 +166,6 @@ def main():
                             conditions=trader_conditions))
         depots.append(depotFile)
 
-
     if not any(traders):
         print("No trader specification found in \"%s\"" % config_file)
 
@@ -182,9 +181,8 @@ def main():
     while continue_trader:
         target_socket.wait(seconds=3)
 
-    tradingLogFile.close()
+    executedTradesFile.close()
     depotFile.close()
-    tradingLogFile.close()
     args.log_file.close()
 
     for depotFile in depots:
