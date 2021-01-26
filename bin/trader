@@ -179,7 +179,11 @@ def main():
     target_socket.on('refresh_express_option', runner.refresh_express_option)
 
     while continue_trader:
-        target_socket.wait(seconds=3)
+        try:
+            target_socket.wait(seconds=3)
+        except Exception as e:
+            print("Caught exception %e shutting down" % e, file=sys.stderr)
+            continue_reader = false
 
     executedTradesFile.close()
     logFile.close()
