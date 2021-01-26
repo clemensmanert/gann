@@ -90,12 +90,6 @@ def main():
                         help="""Where to read config from and store depot and
                         trading log.""")
 
-    parser.add_argument('--log-file', metavar='LOG_FILE',
-                        type=argparse.FileType('a'),
-                        nargs='?',
-                        default='gann_log.json',
-                        help='Where to append the logging.')
-
     args = parser.parse_args()
     tradersConfig = configparser.ConfigParser()
 
@@ -114,6 +108,12 @@ def main():
     executedTradesFile = executedTradesPath.open(mode='a')
     if not executedTradesFile:
         print("Can not open '%s' for writing." % executedTradesPath, file=sys.stderr)
+        sys.exit(1)
+
+    logPath = dataDir / "gann.log"
+    logFile = logPath.open(mode='a')
+    if not logFile:
+        print("Can not open '%s' for writing." % logPath, file=sys.stderr)
         sys.exit(1)
 
     if 'api_key' not in tradersConfig['DEFAULT']:
@@ -171,7 +171,7 @@ def main():
 
     runner = TraderRunner(traders=traders,
                           depots=depots,
-                          log=args.log_file)
+                          log=logFile)
 
     target_socket = SocketIO('https://ws.bitcoin.de', 443, LoggingNamespace)
     target_socket.on('add_order', runner.add_order)
@@ -182,8 +182,7 @@ def main():
         target_socket.wait(seconds=3)
 
     executedTradesFile.close()
-    depotFile.close()
-    args.log_file.close()
+    logFile.close()
 
     for depotFile in depots:
         depotFile.close()
