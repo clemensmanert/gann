@@ -16,35 +16,20 @@ from gann.trader_conditions import TraderConditions, TradingPair
 from gann.offer import offer_bitcoin_de
 from gann.broker_bitcoin_de import BrokerBitcoinDe
 
-class LogHandler:
-    def __init__(self, trader):
-        self.offer_id = 0
-        self.trader = trader
-        print("") # Write deletes the last line which is the status line.
-        # This way we make sure it does
-        # not delete the line before the start of the run.
-
-    def write(self, output):
-        sys.stdout.write("\033[F\033[K")
-        self.offer_id = self.offer_id + 1
-        print("  %6i  %s" % (self.offer_id, output))
-        print('Money: %.2f€, Coins: %f, Bought: %s' % (
-            self.trader.money/100.0,
-            sum(self.trader.depot.values()),
-            ["%f for %.2f€" % (self.trader.depot[price], price/100.0)
-             for price in self.trader.depot]
-        ), sep='', end='')
+def stop_trader():
+    """Signals the TraderRunner to stop."""
+    print(" Exit request occured, exiting...")
+    global continue_trader
+    continue_trader = False
 
 class TraderRunner:
     """ Runs a trader and prints trading activity."""
-    def __init__(self, traders, depot, log):
-        if traders.size != depots.size:
+    def __init__(self, traders, depots, log):
+        if len(traders) != len(depots):
             raise Error("Trader and depot sizes do not machts")
         self.traders = traders
-        self.depot = depot
+        self.depots = depots
 
-        logging.getLogger().addHandler(
-            logging.StreamHandler(LogHandler(self.trader)))
         handler = logging.StreamHandler( log)
         handler.setFormatter(logging.Formatter(
             fmt='%(asctime)s %(levelname)-8s %(message)s',
@@ -58,20 +43,24 @@ class TraderRunner:
         self.running = True
 
     def add_order(self, *args):
+        """Progresses a given order"""
         for i in range(len(self.traders)):
             trader = self.traders[i]
-            depot = self.depot[i]
+            depot = self.depots[i]
             trader.process_offer(offer_bitcoin_de(args[0]))
             depot.seek(0)
-            depot.write(str({'money': self.trader.money,
-                             'depot': self.trader.depot}))
-        # flush everythin else if previously written depot was larger.
-        self.depot.truncate()
+            depot.write(str({'money': trader.money,
+                             'depot': trader.depot}))
+            # flush everythin else if previously written depot was larger.
+            depot.truncate()
 
     def remove_order(self, *args):
+        """Progress the removal of an order"""
         pass
 
     def refresh_express_option(self, *args):
+        """Seems to occur sometimes at bitcoin.de
+        TODO: Checkout how to handle it."""
         pass
 
     def stop(self):
@@ -89,13 +78,17 @@ class TraderRunner:
             target_socket.wait(seconds=2)
 
 def main():
+    global continue_trader
+    continue_trader = True
+
+    signal.signal(signal.SIGINT, lambda signal, frame: stop_trader())
+
     parser = argparse.ArgumentParser(description="""A simple trading bot.""")
 
-    parser.add_argument('--data', metavar='TRADER_DATA',
+    parser.add_argument('data', metavar='TRADER_DATA',
                         type=str,
-                        nargs='?',
-                        required=True,
-                        help='Where to read config from and store depot and trading log.')
+                        help="""Where to read config from and store depot and
+                        trading log.""")
 
     parser.add_argument('--log-file', metavar='LOG_FILE',
                         type=argparse.FileType('a'),
@@ -104,17 +97,18 @@ def main():
                         help='Where to append the logging.')
 
     args = parser.parse_args()
-    config = configparser.ConfigParser()
+    tradersConfig = configparser.ConfigParser()
 
     dataDir = Path(args.data)
     if not dataDir.exists():
         print("%s does not exists." % dataDir, file=sys.stderr)
         sys.exit(1)
 
-    configFile = dataDir / "config.ini"
-    if not configFile.exists():
-        print("%s does not exists." % configFile, file=sys.stderr)
+    tradersFile = dataDir / "traders.ini"
+    if not tradersFile.exists():
+        print("%s does not exists." % tradersFile, file=sys.stderr)
         sys.exit(1)
+    tradersConfig.read(tradersFile)
 
     tradingLogPath = dataDir / "trading.log"
     tradingLogFile = tradingLogPath.open(mode='a')
@@ -122,35 +116,35 @@ def main():
         print("Can not open '%s' for writing." % tradingLogPath, file=sys.stderr)
         sys.exit(1)
 
-    config.read(configFile)
-
-    if 'api_key' not in config['bitcoin.de']:
+    if 'api_key' not in tradersConfig['DEFAULT']:
         print("No api_key entry for bitcoin.de in trader config file found. "
               "Exiting.", file=sys.stderr)
         sys.exit(1)
 
-    if 'secret' not in config['bitcoin.de']:
-        print("No secret entry for bitcoind.de in trader config file found. "
+    if 'secret' not in tradersConfig['DEFAULT']:
+        print("No secret entry for bitcoin.de in trader config file found. "
               "Exiting.", file=sys.stderr)
         sys.exit(1)
 
     broker_bitcoin_de = BrokerBitcoinDe(
         trading_log=tradingLogFile,
-        api_key=config['bitcoin.de']['api_key'],
-        secret=config['bitcoin.de']['secret'])
+        api_key=tradersConfig['DEFAULT']['api_key'],
+        secret=tradersConfig['DEFAULT']['secret'])
 
     traders = []
-    depot_fiels = []
+    depots = []
 
-    for section in config:
+    for section in tradersConfig:
+        if section == 'DEFAULT':
+            continue
         trader_conditions = TraderConditions(
-            config.getint(section, 'amount_price', fallback=100_00),
-            config.getint(section, 'amount_price_tolerance', fallback=20_00),
-            config.getint(section, 'min_profit_price', fallback=10_00),
-            config.getint(section, 'step_price', fallback=40_00),
-            config.getint(section, 'turnaround_price', fallback=10_00),
+            tradersConfig.getint(section, 'amount_price', fallback=100_00),
+            tradersConfig.getint(section, 'amount_price_tolerance', fallback=20_00),
+            tradersConfig.getint(section, 'min_profit_price', fallback=10_00),
+            tradersConfig.getint(section, 'step_price', fallback=40_00),
+            tradersConfig.getint(section, 'turnaround_price', fallback=10_00),
         TradingPair(
-            config.get(section, 'trading_pair', fallback='btceur')))
+            tradersConfig.get(section, 'trading_pair', fallback='btceur')))
 
         depotPath = dataDir / (section+'_depot.json')
         if not depotPath.exists():
@@ -166,25 +160,37 @@ def main():
         start_money = start_data.get('money', 0.0)
         start_depot = start_data.get('depot', dict())
 
-        traders.push(Trader(money=start_money,
+        traders.append(Trader(money=start_money,
                             depot=start_depot,
                             broker=broker_bitcoin_de,
                             conditions=trader_conditions))
-        depots.push(depotFile)
+        depots.append(depotFile)
 
 
-    if traders.size() < 1:
+    if not any(traders):
         print("No trader specification found in \"%s\"" % config_file)
+
     runner = TraderRunner(traders=traders,
-                          depots=depot_files,
+                          depots=depots,
                           log=args.log_file)
 
-    runner.run()
+    target_socket = SocketIO('https://ws.bitcoin.de', 443, LoggingNamespace)
+    target_socket.on('add_order', runner.add_order)
+    target_socket.on('remove_order', runner.remove_order)
+    target_socket.on('refresh_express_option', runner.refresh_express_option)
 
+    while continue_trader:
+        target_socket.wait(seconds=3)
+
+    tradingLogFile.close()
     depotFile.close()
     tradingLogFile.close()
     args.log_file.close()
-    print("\n\nStopped servus")
+
+    for depotFile in depots:
+        depotFile.close()
+
+    print("\n\n Tear down successfull")
 
 if __name__ == "__main__":
     main()
