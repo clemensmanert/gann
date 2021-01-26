@@ -25,12 +25,12 @@ class TraderRunner:
         for i in range(len(self.traders)):
             trader = self.traders[i]
             depot = self.depots[i]
-            trader.process_offer(offer_bitcoin_de(args[0]))
-            depot.seek(0)
-            depot.write(str({'money': trader.money,
-                             'depot': trader.depot}))
-            # flush everythin else if previously written depot was larger.
-            depot.truncate()
+            if trader.process_offer(offer_bitcoin_de(args[0])):
+                depot.seek(0)
+                depot.write(str({'money': trader.money,
+                                 'depot': trader.depot}))
+                # flush everythin else if previously written depot was larger.
+                depot.truncate()
 
     def remove_order(self, *args):
         """Progress the removal of an order"""
