@@ -12,8 +12,8 @@ from socketIO_client import SocketIO, LoggingNamespace
 from pathlib import Path
 
 from gann.trader import Trader
+from gann.trader_runner import TraderRunner
 from gann.trader_conditions import TraderConditions, TradingPair
-from gann.offer import offer_bitcoin_de
 from gann.broker_bitcoin_de import BrokerBitcoinDe
 
 def stop_trader():
@@ -21,61 +21,6 @@ def stop_trader():
     print(" Exit request occured, exiting...")
     global continue_trader
     continue_trader = False
-
-class TraderRunner:
-    """ Runs a trader and prints trading activity."""
-    def __init__(self, traders, depots, log):
-        if len(traders) != len(depots):
-            raise Error("Trader and depot sizes do not machts")
-        self.traders = traders
-        self.depots = depots
-
-        handler = logging.StreamHandler( log)
-        handler.setFormatter(logging.Formatter(
-            fmt='%(asctime)s %(levelname)-8s %(message)s',
-            datefmt='%Y-%m-%d %H:%M:%S')
-                             )
-
-        logging.getLogger().addHandler(handler)
-
-        logging.getLogger().setLevel(logging.INFO)
-
-        self.running = True
-
-    def add_order(self, *args):
-        """Progresses a given order"""
-        for i in range(len(self.traders)):
-            trader = self.traders[i]
-            depot = self.depots[i]
-            trader.process_offer(offer_bitcoin_de(args[0]))
-            depot.seek(0)
-            depot.write(str({'money': trader.money,
-                             'depot': trader.depot}))
-            # flush everythin else if previously written depot was larger.
-            depot.truncate()
-
-    def remove_order(self, *args):
-        """Progress the removal of an order"""
-        pass
-
-    def refresh_express_option(self, *args):
-        """Seems to occur sometimes at bitcoin.de
-        TODO: Checkout how to handle it."""
-        pass
-
-    def stop(self):
-        """Stops the demo."""
-        self.running = False
-
-    def run(self):
-        """ Runs the trader until stop() is calles."""
-        target_socket = SocketIO('https://ws.bitcoin.de', 443, LoggingNamespace)
-        target_socket.on('add_order', self.add_order)
-        target_socket.on('remove_order', self.remove_order)
-        target_socket.on('refresh_express_option', self.refresh_express_option)
-
-        while self.running:
-            target_socket.wait(seconds=2)
 
 def main():
     global continue_trader
@@ -182,8 +127,8 @@ def main():
         try:
             target_socket.wait(seconds=3)
         except Exception as e:
-            print("Caught exception %e shutting down" % e, file=sys.stderr)
-            continue_reader = false
+            print("Caught exception %s shutting down" % e, file=sys.stderr)
+            continue_reader = False
 
     executedTradesFile.close()
     logFile.close()
