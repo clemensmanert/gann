@@ -29,7 +29,7 @@ class TraderConditions:
         :param int min_profit_price: Specifies how much profit each selling must
         generate.
         :param int step_price: Specifies how much the price has to decline,
-                               unitl the trader should buy the next asset.
+                               unitl the trader should buy the next asse.t
         :param int turnaround_price: Specifies how much the price has to
                                      decline, until the trader should start
         buying again.

@@ -15,10 +15,10 @@ class TestBroker:
 
     """ In these tests we guess, that all trades work"""
     def try_buy(self, offer, amount):
-        return True
+        return amount
 
     def try_sell(self, offer, amount):
-        return True
+        return amount
 
 class TestTrader(unittest.TestCase):
 

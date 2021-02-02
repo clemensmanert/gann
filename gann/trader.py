@@ -40,12 +40,12 @@ class Trader:
         if offer.price * offer.min_amount > self.conditions.max_price():
             LOGGER.info("%s Don't buy because the min amount "
                         "is too hight.", offer)
-            return
+            return False
 
         if offer.price * offer.amount < self.conditions.min_price():
             LOGGER.info("%s Don't buy because the amount is "
                         "too small.", offer)
-            return
+            return False
 
         if any(self.depot):
             if offer.price > (self.last_purchase_price
@@ -59,7 +59,7 @@ class Trader:
                     LOGGER.info("%s Don't buy because price is too close "
                                 "to the last purchase. %.2f", offer,
                                 self.last_purchase_price/100.0)
-                return
+                return False
         else:
             if offer.price > (self.highest_price_buying -
                               self.conditions.turnaround_price):
@@ -68,7 +68,7 @@ class Trader:
                             offer,
                             (self.highest_price_buying
                              - self.conditions.turnaround_price) / 100.0)
-                return
+                return False
 
         amount = self.conditions.amount_price / offer.price
 
@@ -86,10 +86,11 @@ class Trader:
         if amount * offer.price > self.money:
             LOGGER.info("%s Don't buy because there is not enough money left.",
                         offer)
-            return
+            return False
 
-        if not self.broker.try_buy(offer, amount):
-            return
+        gained_coins = self.broker.try_buy(offer, amount)
+        if not gained_coins:
+            return False
 
         self.money -= amount * offer.price
         self.last_purchase_price = offer.price
@@ -97,9 +98,11 @@ class Trader:
                     offer, amount, self.money)
 
         if offer.price in self.depot:
-            self.depot[offer.price] += amount
+            self.depot[offer.price] += gained_coins
         else:
-            self.depot[offer.price] = amount
+            self.depot[offer.price] = gained_coins
+
+        return True
 
     def consider_sell(self, offer):
         """Takes an offer and sells to it if it matches the configured conditions
@@ -136,7 +139,7 @@ class Trader:
             else:
                 LOGGER.info("%s Don't sell because we only have %i "
                         "to make profit.", offer, amount)
-            return
+            return False
 
         # Many platforms do not accept to obscure numbers, so truncate after 4
         amount = float("%.4f" % amount)
@@ -145,10 +148,11 @@ class Trader:
         if amount < offer.min_amount:
             amount = offer.min_amount
 
-        if not self.broker.try_sell(offer, amount):
-            return
+        gained_money = self.broker.try_sell(offer, amount)
+        if not gained_money:
+            return False
 
-        self.money += amount * offer.price
+        self.money += gained_money
 
         for item in consumed:
             del self.depot[item]
@@ -156,9 +160,11 @@ class Trader:
         if left_in_depot_amount > 0:
             self.depot[left_in_depot_price] = left_in_depot_amount
 
+        return True
+
     def process_offer(self, offer):
         if offer.trading_pair != self.conditions.trading_pair:
-            return False;
+            return False
 
         if offer.type == OfferType.BUY:
             # Someone wants to buy coins
