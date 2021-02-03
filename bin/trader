@@ -15,6 +15,7 @@ from gann.trader import Trader
 from gann.trader_runner import TraderRunner
 from gann.trader_conditions import TraderConditions, TradingPair
 from gann.broker_bitcoin_de import BrokerBitcoinDe
+from gann.offer import offer_bitcoin_de
 
 def stop_trader():
     """Signals the TraderRunner to stop."""
@@ -52,7 +53,8 @@ def main():
     executedTradesPath = dataDir / "executed_trades.log"
     executedTradesFile = executedTradesPath.open(mode='a')
     if not executedTradesFile:
-        print("Can not open '%s' for writing." % executedTradesPath, file=sys.stderr)
+        print("Can not open '%s' for writing." % executedTradesPath,
+              file=sys.stderr)
         sys.exit(1)
 
     logPath = dataDir / "gann.log"
@@ -84,7 +86,8 @@ def main():
             continue
         trader_conditions = TraderConditions(
             tradersConfig.getint(section, 'amount_price', fallback=100_00),
-            tradersConfig.getint(section, 'amount_price_tolerance', fallback=20_00),
+            tradersConfig.getint(section, 'amount_price_tolerance',
+                                 fallback=20_00),
             tradersConfig.getint(section, 'min_profit_price', fallback=10_00),
             tradersConfig.getint(section, 'step_price', fallback=40_00),
             tradersConfig.getint(section, 'turnaround_price', fallback=10_00),
@@ -119,7 +122,8 @@ def main():
                           log=logFile)
 
     target_socket = SocketIO('https://ws.bitcoin.de', 443, LoggingNamespace)
-    target_socket.on('add_order', runner.add_order)
+    target_socket.on('add_order', lambda o: runner.add_order(
+        offer_bitcoin_de(o)))
     target_socket.on('remove_order', runner.remove_order)
     target_socket.on('refresh_express_option', runner.refresh_express_option)
 

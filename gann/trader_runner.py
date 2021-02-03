@@ -1,7 +1,5 @@
 import logging
 
-from gann.offer import offer_bitcoin_de
-
 class TraderRunner:
     """ Runs a trader and prints trading activity."""
     def __init__(self, traders, depots, log):
@@ -20,12 +18,12 @@ class TraderRunner:
 
         logging.getLogger().setLevel(logging.INFO)
 
-    def add_order(self, *args):
+    def add_order(self, offer):
         """Progresses a given order"""
         for i in range(len(self.traders)):
             trader = self.traders[i]
             depot = self.depots[i]
-            if trader.process_offer(offer_bitcoin_de(args[0])):
+            if trader.process_offer(offer):
                 depot.seek(0)
                 depot.write(str({'money': trader.money,
                                  'depot': trader.depot}))
