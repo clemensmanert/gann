@@ -65,12 +65,12 @@ class Offer:
         self.payment_option = payment_option
 
     def __str__(self):
-        return "#%s %s %10.6f(%10.6f) for %.2f € of %s" % (self.order_id,
+        return "#%s %4s %10.6f(%10.6f) for %8.2f € of %s" % (self.order_id,
                                                            self.type,
                                                         self.amount,
                                                         self.min_amount,
                                                         self.price/100.0,
-                                                        self.trading_pair)
+                                                        self.trading_pair.value)
     def __eq__(self, other):
         if other is None:
             return False
