@@ -150,13 +150,6 @@ class Trader:
                         "to make profit.", offer, amount)
             return False
 
-        # Many platforms do not accept to obscure numbers, so truncate after 4
-        amount = float("%.4f" % amount)
-
-        # If truncating lead to a number smaller than min amount, use it
-        if amount < offer.min_amount:
-            amount = offer.min_amount
-
         # Check if we would make enough profit with the deal
         if initial_spent + self.conditions.min_profit_price > (
                 offer.price * amount):
