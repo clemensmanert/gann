@@ -132,7 +132,9 @@ class BrokerBitcoinDe:
                                data=data)
 
         if result.status_code == 201:
-            print("Buying %s succeeded", self.trading_log)
+            print("Successfully bought %f %s of %s" % (
+                amount, offer.trading_pair.value, offer),
+                  file=self.trading_log)
             return self.gained_coins_after_fees(offer)
 
         LOGGER.error("Failed to buy %f as %s (%i) %s",
@@ -148,7 +150,9 @@ class BrokerBitcoinDe:
         result = requests.post(url, data, headers=self.post_headers(url, data))
 
         if result.status_code == 201:
-            print("Selling %s succeeded", self.trading_log)
+            print("Successfully sold %f %s of %s" % (
+                amount, offer.trading_pair.value, offer),
+                  file=self.trading_log)
             return self.gained_money_after_fees(offer)
 
         LOGGER.error("Failed to sell %f as %s (%i) %s",

@@ -18,8 +18,11 @@ class TradingLog:
     def   __init__(self):
         self.content = []
 
-    def append(self, sowas):
-        self.content.append(sowas)
+    def write(self, log_entry):
+        # Ignore newlines
+        if log_entry == '\n':
+            return
+        self.content.append(log_entry)
 
 class MockResponse:
     """Mocks the response of a `requests.get(...)` call.
@@ -103,6 +106,7 @@ class TestBrokerBitcoinDe(unittest.TestCase):
             amount=0.2)
 
         self.assertEqual(actual, False)
+        self.assertEqual(0, len(self.trading_log.content))
 
 
     @mock.patch('requests.post', Mock(return_value=MockResponse(201)))
@@ -121,7 +125,7 @@ class TestBrokerBitcoinDe(unittest.TestCase):
             amount=0.2)
 
         self.assertEqual(actual, 0.19)
-
+        self.assertEqual(1, len(self.trading_log.content))
 
     @mock.patch('requests.post', Mock(return_value=MockResponse(
         422, {'errors': ['Order not possible'],
@@ -140,7 +144,7 @@ class TestBrokerBitcoinDe(unittest.TestCase):
             amount=0.2)
 
         self.assertEqual(actual, False)
-
+        self.assertEqual(0, len(self.trading_log.content))
 
     @mock.patch('requests.post', Mock(return_value=MockResponse(201)))
     @mock.patch('requests.get', Mock(return_value=MockResponse(
@@ -148,6 +152,7 @@ class TestBrokerBitcoinDe(unittest.TestCase):
     def test_try_sell_success(self):
         """Expect the recevied money (after fees) if a selling was
         successfull."""
+        self.assertEqual(0, len(self.trading_log.content))
         actual = self.target.try_sell(
             Offer(
                 order_id='some id3',
@@ -159,3 +164,5 @@ class TestBrokerBitcoinDe(unittest.TestCase):
             amount=0.2)
 
         self.assertEqual(actual, 99_90)
+        self.assertEqual(1, len(self.trading_log.content))
+
