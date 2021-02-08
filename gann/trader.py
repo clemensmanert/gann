@@ -88,10 +88,13 @@ class Trader:
                         offer)
             return False
 
+        LOGGER.info("Try to buy %f amount of %s", amount, offer)
         gained_coins = self.broker.try_buy(offer, amount)
         if not gained_coins:
+            LOGGER.info("Failed to buy %f of %s", gained_coins, offer)
             return False
 
+        LOGGER.info("Bought %i of %s", gained_coins, offer)
         self.money -= amount * offer.price
         self.last_purchase_price = offer.price
         LOGGER.info("%s Bought %f, money left: %i",
@@ -112,24 +115,30 @@ class Trader:
         if offer.price > self.highest_price_buying:
             self.highest_price_buying = offer.price
 
-        prices = sorted(
-            filter(lambda p:
-                   offer.price >= (p + self.conditions.min_profit_price),
-                   list(self.depot)),
-            reverse=True)
+
+        prices = sorted(self.depot, reverse=True)
+
+        if len(prices) < 1:
+            LOGGER.info("%s Don't sell because we have no position where we"
+                        " would  make profit.", offer)
+            return False
 
         amount = 0
         consumed = []
         left_in_depot_amount = 0
+        initial_spent = 0
         while any(prices) and amount < offer.amount:
-            if amount + self.depot[prices[0]] > offer.amount:
+            current_price = prices.pop()
+            if amount + self.depot[current_price] > offer.amount:
                 left_in_depot_amount = offer.amount - amount
-                left_in_depot_price = prices[0]
+                left_in_depot_price = current_price
                 amount = offer.amount
+                initial_spent += left_in_depot_price * (
+                    self.depot[left_in_depot_price] - left_in_depot_amount)
             else:
-                amount += self.depot[prices[0]]
-                consumed.append(prices[0])
-                del prices[0]
+                initial_spent += self.depot[current_price] * current_price
+                amount += self.depot[current_price]
+                consumed.append(current_price)
 
         # Exit if we do not have enough in depot to make a profitalbe deal
         if offer.min_amount > amount:
@@ -148,10 +157,20 @@ class Trader:
         if amount < offer.min_amount:
             amount = offer.min_amount
 
-        gained_money = self.broker.try_sell(offer, amount)
-        if not gained_money:
+        # Check if we would make enough profit with the deal
+        if initial_spent + self.conditions.min_profit_price > (
+                offer.price * amount):
+            LOGGER.info("%s Don't sell because profit too low. Initially paid "
+                        "%.2f, but we only get %.2f for it",
+                        offer,  initial_spent / 100, offer.price * amount / 100)
             return False
 
+        gained_money = self.broker.try_sell(offer, amount)
+        if not gained_money:
+            LOGGER.info("Failed to sell %f of %s", amount, offer)
+            return False
+
+        LOGGER.info("Sold %f of %s for %f", amount, offer, gained_money/100)
         self.money += gained_money
 
         for item in consumed:

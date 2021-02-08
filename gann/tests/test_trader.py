@@ -9,6 +9,8 @@ from gann.trader_conditions import TraderConditions, TradingPair
 logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 logging.getLogger().setLevel(logging.INFO)
 
+INTITIAL_DEPOT = {5000_00: 0.01}
+
 class TestBroker:
     def __init__(self):
         pass
@@ -18,7 +20,7 @@ class TestBroker:
         return amount
 
     def try_sell(self, offer, amount):
-        return amount
+        return offer.price * amount
 
 class TestTrader(unittest.TestCase):
 
@@ -41,8 +43,7 @@ class TestTrader(unittest.TestCase):
 
     def setUp(self):
         self.offer_id = 0
-        self.trader = Trader(depot={5000_00:
-                                    0.01},
+        self.trader = Trader(depot=INTITIAL_DEPOT,
                              money=1000_00,
                              conditions=TraderConditions(),
                              broker=TestBroker())
@@ -57,7 +58,7 @@ class TestTrader(unittest.TestCase):
                        offer_type=OfferType.SELL,
                        trading_pair=TradingPair.BTGEUR))
 
-        self.assertEqual(self.trader.depot, {5000_00: 0.01})
+        self.assertEqual(self.trader.depot, INTITIAL_DEPOT)
 
     def test_ignore_more_expensive_offers(self):
         """Expect to ignore a selling offer, if it is too exensive."""
@@ -65,7 +66,7 @@ class TestTrader(unittest.TestCase):
                                              min_amount=1,
                                              price=999900,
                                              offer_type=OfferType.SELL))
-        self.assertEqual(self.trader.depot, {5000_00: 0.01})
+        self.assertEqual(self.trader.depot, INTITIAL_DEPOT)
 
 
     def test_irgnore_too_hight_min_amounts(self):
@@ -141,20 +142,6 @@ class TestTrader(unittest.TestCase):
 
         self.assertEqual(len(self.trader.depot), 2)
 
-    def test_expect_to_sell_if_price_is_outisde_delta(self):
-        """Expect to meet a sell offer, if delta is reached."""
-
-        self.trader.depot[4990_00] = 0.02
-        self.trader.last_purchase_price = 4990_00
-
-        self.trader.process_offer(self.offer(
-            amount=2.5,
-            min_amount=0.01,
-            price=5000_00,
-            offer_type=OfferType.BUY))
-
-        self.assertEqual(self.trader.depot, {5000_00: 0.01})
-
     def test_sell_min_amount_too_high(self):
         """Expect to ignores a buying request, if delta is reached but min
         amount is too hight."""
@@ -165,7 +152,7 @@ class TestTrader(unittest.TestCase):
             price=6000_00,
             offer_type=OfferType.BUY))
 
-        self.assertEqual(self.trader.depot, {5000_00: 0.01})
+        self.assertEqual(self.trader.depot, INTITIAL_DEPOT)
 
     def test_start_buying_on_turnaround(self):
         """Expects to start buying, when starting with an empty depot and a
@@ -239,6 +226,51 @@ class TestTrader(unittest.TestCase):
         self.trader.process_offer(self.offer(OfferType.SELL, 8000_00, 1))
         self.assertEqual(self.trader.depot, dict())
         self.assertEqual(self.trader.money, 1000_00)
+
+    def test_too_little_profit(self):
+        """Expect the trader not to buy anithing if it does not make any
+        profit"""
+        self.trader.process_offer(self.offer(OfferType.BUY, 5009_00, 0.01))
+
+        self.assertEqual(self.trader.money, 1000_00)
+        self.assertEqual(self.trader.depot, INTITIAL_DEPOT)
+
+    def test_enough_profit(self):
+        """Expect the trader to sell, if it makes enoguht profit"""
+        self.trader.process_offer(self.offer(OfferType.BUY, 6000_00, 0.01))
+
+        self.assertEqual(self.trader.money, 1060_00)
+        self.assertEqual(self.trader.depot, dict())
+
+    def test_enough_profit_but_something_left(self):
+        """Expect the trader have something left, if the offer asks for less
+        than there is in depot."""
+        self.trader.process_offer(self.offer(OfferType.BUY, 10000_00, 0.005))
+
+        self.assertEqual(self.trader.money, 1050_00)
+        self.assertEqual(self.trader.depot, {5000_00: 0.005})
+
+    def test_enough_when_selling_two_positions(self):
+        self.trader.depot[5010_00] = 0.01
+        self.trader.money = 0
+
+        self.trader.process_offer(self.offer(OfferType.BUY, 6000_00, 0.02,
+                                             min_amount=0.02))
+
+        self.assertEqual(self.trader.money, 120_00)
+        self.assertEqual(self.trader.depot, dict())
+
+    def test_sell_lower_position_when_highter_brings_no_profit(self):
+        self.trader.depot[4300_00] = 0.01
+
+        self.trader.process_offer(self.offer(OfferType.BUY, 5500_00, 0.01))
+        self.assertEqual(self.trader.depot, INTITIAL_DEPOT)
+
+    def test_sell_partly_if_to_much_in_depot(self):
+        self.trader.depot[5050_00] = 0.2
+
+        self.trader.process_offer(self.offer(OfferType.BUY, 5500_00, 0.11))
+        self.assertEqual(self.trader.depot, {5050_00: 0.1})
 
     if __name__ == '__main__':
         unittest.main()
