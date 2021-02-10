@@ -272,5 +272,11 @@ class TestTrader(unittest.TestCase):
         self.trader.process_offer(self.offer(OfferType.BUY, 5500_00, 0.11))
         self.assertEqual(self.trader.depot, {5050_00: 0.1})
 
+    def test_calculate_the_right_amount_to_sell(self):
+        self.trader.depot[5000_00] = 1000
+
+        self.trader.process_offer(self.offer(OfferType.BUY, 5500_00, 0.1))
+        self.assertEqual(self.trader.depot, {5000_00: 999.9})
+
     if __name__ == '__main__':
         unittest.main()

@@ -130,10 +130,16 @@ def main():
     while continue_trader:
         try:
             target_socket.wait(seconds=3)
+            # Make sure executed trades gets actually written once in a while
+            # Because if the trader gets stopped without the possibilty to
+            # flush, the file might be empty.
+            executedTradesFile.flush()
         except Exception as e:
             print("Caught exception %s shutting down" % e, file=sys.stderr)
             continue_reader = False
+            executedTradesFile.flush()
 
+    executedTradesFile.flush()
     executedTradesFile.close()
     logFile.close()
 

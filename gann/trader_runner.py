@@ -29,6 +29,7 @@ class TraderRunner:
                                  'depot': trader.depot}))
                 # flush everythin else if previously written depot was larger.
                 depot.truncate()
+                depot.flush()
                 # skip other traders, since this offers gone now
                 return
 

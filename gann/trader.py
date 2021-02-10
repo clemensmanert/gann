@@ -130,8 +130,9 @@ class Trader:
         while any(prices) and amount < offer.amount:
             current_price = prices.pop()
             if amount + self.depot[current_price] > offer.amount:
-                left_in_depot_amount = offer.amount - amount
                 left_in_depot_price = current_price
+                left_in_depot_amount = (self.depot[left_in_depot_price]
+                                        - (offer.amount - amount))
                 amount = offer.amount
                 initial_spent += left_in_depot_price * (
                     self.depot[left_in_depot_price] - left_in_depot_amount)
