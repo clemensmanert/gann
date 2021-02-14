@@ -13,7 +13,8 @@ from pathlib import Path
 
 from gann.trader import Trader
 from gann.trader_runner import TraderRunner
-from gann.trader_conditions import TraderConditions, TradingPair
+from gann.trader_conditions import TraderConditions
+from gann.trading_pair import TradingPair
 from gann.broker_bitcoin_de import BrokerBitcoinDe
 from gann.offer import offer_bitcoin_de
 

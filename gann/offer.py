@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from enum import Enum, unique
-from gann.trader_conditions import TradingPair
+from gann.trading_pair import TradingPair
 
 @unique
 class PaymentOption(Enum):

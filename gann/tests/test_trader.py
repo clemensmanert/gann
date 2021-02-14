@@ -4,7 +4,8 @@ import sys
 
 from gann.offer import Offer, OfferType
 from gann.trader import Trader
-from gann.trader_conditions import TraderConditions, TradingPair
+from gann.trader_conditions import TraderConditions
+from gann.trading_pair import TradingPair
 
 logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 logging.getLogger().setLevel(logging.INFO)

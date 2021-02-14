@@ -1,14 +1,4 @@
-from enum import Enum, unique
-
-@unique
-class TradingPair(Enum):
-    BTCEUR = 'btceur'
-    ETHEUR = 'etheur'
-    BSVEUR = 'bsveur'
-    BCHEUR = 'bcheur'
-    BTGEUR = 'btgeur'
-    LTCEUR = 'ltceur'
-    UNKNOWN = 'unknown'
+from gann.trading_pair import TradingPair
 
 class TraderConditions:
     """ The conditions on which the trader should decide when to buy/sell. """

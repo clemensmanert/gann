@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 
 from gann.offer import Offer, OfferType
 from gann.removal import Removal
-from gann.trader_conditions import TradingPair
+from gann.trading_pair import TradingPair
 from gann.serialization import (serialize_offer_to, serialize_removal_to,
                                 deserialize_from)
 

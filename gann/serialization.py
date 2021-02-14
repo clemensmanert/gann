@@ -3,7 +3,7 @@ from datetime import datetime
 
 import struct
 from gann.offer import OfferType, Offer, PaymentOption
-from gann.trader_conditions import TradingPair
+from gann.trading_pair import TradingPair
 from gann.removal import Removal
 
 @unique

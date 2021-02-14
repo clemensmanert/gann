@@ -9,7 +9,7 @@ from typing import Dict
 
 from gann.broker_bitcoin_de import BrokerBitcoinDe
 from gann.offer import Offer, OfferType
-from gann.trader_conditions import TradingPair
+from gann.trading_pair import TradingPair
 
 logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
 logging.getLogger().setLevel(logging.INFO)
