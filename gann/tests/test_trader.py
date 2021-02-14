@@ -13,10 +13,10 @@ logging.getLogger().setLevel(logging.INFO)
 INTITIAL_DEPOT = {5000_00: 0.01}
 
 class TestBroker:
+    """ In these tests we guess, that all trades work"""
     def __init__(self):
         pass
 
-    """ In these tests we guess, that all trades work"""
     def try_buy(self, offer, amount):
         return amount
 
@@ -231,7 +231,7 @@ class TestTrader(unittest.TestCase):
     def test_too_little_profit(self):
         """Expect the trader not to buy anithing if it does not make any
         profit"""
-        self.trader.process_offer(self.offer(OfferType.BUY, 5009_00, 0.01))
+        self.trader.process_offer(self.offer(OfferType.BUY, 5009_00, 0.02))
 
         self.assertEqual(self.trader.money, 1000_00)
         self.assertEqual(self.trader.depot, INTITIAL_DEPOT)
@@ -270,14 +270,28 @@ class TestTrader(unittest.TestCase):
     def test_sell_partly_if_to_much_in_depot(self):
         self.trader.depot[5050_00] = 0.2
 
-        self.trader.process_offer(self.offer(OfferType.BUY, 5500_00, 0.11))
+        self.trader.process_offer(self.offer(OfferType.BUY, 5600_00, 0.11))
         self.assertEqual(self.trader.depot, {5050_00: 0.1})
 
     def test_calculate_the_right_amount_to_sell(self):
         self.trader.depot[5000_00] = 1000
 
-        self.trader.process_offer(self.offer(OfferType.BUY, 5500_00, 0.1))
-        self.assertEqual(self.trader.depot, {5000_00: 999.9})
+        self.trader.process_offer(self.offer(OfferType.BUY, 5500_00, 0.02))
+        self.assertEqual(self.trader.depot, {5000_00: 999.98})
+
+    def test_profit_as_persentage_sell(self):
+        self.trader.conditions = TraderConditions(min_profit_price='10%')
+
+        self.trader.process_offer(self.offer(OfferType.BUY, 5500_00, 0.01))
+        self.assertEqual(self.trader.depot, {})
+        self.assertEqual(self.trader.money, 1000_00 + 5500)
+
+    def test_profit_as_persentage_hold(self):
+        self.trader.conditions = TraderConditions(min_profit_price='10%')
+
+        self.trader.process_offer(self.offer(OfferType.BUY, 5400_00, 0.01))
+        self.assertEqual(self.trader.depot, INTITIAL_DEPOT)
+        self.assertEqual(self.trader.money, 1000_00)
 
     if __name__ == '__main__':
         unittest.main()

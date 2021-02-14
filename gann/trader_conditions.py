@@ -1,4 +1,5 @@
 from gann.trading_pair import TradingPair
+from gann.offer import Offer
 
 class TraderConditions:
     """ The conditions on which the trader should decide when to buy/sell. """
@@ -29,13 +30,32 @@ class TraderConditions:
 
         self.amount_price = amount_price
         self.amount_price_tolerance = amount_price_tolerance
-        self.min_profit_price = min_profit_price
         self.step_price = step_price
         self.turnaround_price = turnaround_price
         self.trading_pair = trading_pair
+
+        if isinstance(min_profit_price, str) and min_profit_price.endswith('%'):
+            self.min_profit = float(min_profit_price[:-1])
+            self.percentage = True
+        else:
+            self.min_profit = float(min_profit_price)
+            self.percentage = False
 
     def max_price(self):
         return self.amount_price + self.amount_price_tolerance
 
     def min_price(self):
         return self.amount_price - self.amount_price_tolerance
+
+    def enough(self,
+               amount: float,
+               offer: Offer,
+               initial_spent: int) -> bool:
+
+        if self.percentage:
+            return (offer.price * amount
+                 >= ( initial_spent *(1 + self.min_profit / 100)))
+
+        return  (amount * offer.price >= (
+            initial_spent/self.amount_price * self.min_profit +
+            initial_spent))

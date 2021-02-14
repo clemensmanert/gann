@@ -152,8 +152,7 @@ class Trader:
             return False
 
         # Check if we would make enough profit with the deal
-        if initial_spent + self.conditions.min_profit_price > (
-                offer.price * amount):
+        if not self.conditions.enough(amount, offer, initial_spent):
             LOGGER.info("%s Don't sell because profit too low. Initially paid "
                         "%.2f, but we only get %.2f for it",
                         offer,  initial_spent / 100, offer.price * amount / 100)
