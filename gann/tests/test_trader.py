@@ -293,6 +293,32 @@ class TestTrader(unittest.TestCase):
         self.assertEqual(self.trader.depot, INTITIAL_DEPOT)
         self.assertEqual(self.trader.money, 1000_00)
 
+    def test_do_not_buy_when_price_is_too_close_to_last_purchase(self):
+        """Expect to ignore sellings where the price is too close to the
+        last pruchase position."""
+
+        self.trader.process_offer(self.offer(OfferType.SELL, 4999_00, 0.1, 0.0))
+        self.assertEqual(self.trader.depot, INTITIAL_DEPOT)
+        self.assertEqual(self.trader.money, 1000_00)
+
+    def test_do_not_buy_when_price_is_higher_than_last_purchase(self):
+        """Expect to ignore sellings where the price is higher than the last
+        position"""
+
+        self.trader.process_offer(self.offer(OfferType.SELL, 5001_00, 0.1, 0.0))
+
+        self.assertEqual(self.trader.depot, INTITIAL_DEPOT)
+        self.assertEqual(self.trader.money, 1000_00)
+
+    def test_do_not_buy_when_there_is_not_enough_money(self):
+        """Expect to ignore sellings we have too little money to buy."""
+        self.trader.money = 1_00;
+
+        self.trader.process_offer(self.offer(OfferType.SELL, 100_00, 1, 1))
+
+        self.assertEqual(self.trader.depot, INTITIAL_DEPOT)
+        self.assertEqual(self.trader.money, 1_00)
+
     def test_sell_only_profitalbe(self):
         """Expect to sell only the profitalbe positions,
         keep those who do not make profit"""
