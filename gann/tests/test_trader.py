@@ -293,5 +293,18 @@ class TestTrader(unittest.TestCase):
         self.assertEqual(self.trader.depot, INTITIAL_DEPOT)
         self.assertEqual(self.trader.money, 1000_00)
 
+    def test_sell_only_profitalbe(self):
+        """Expect to sell only the profitalbe positions,
+        keep those who do not make profit"""
+        self.trader.depot = {4024994: 0.002,
+                             4018100: 0.002,
+                             4000000: 0.002}
+
+        self.trader.process_offer(self.offer(OfferType.BUY, 44000_00, 0.1, 0.0))
+
+        self.assertEqual(self.trader.depot, {4024994: 0.002,
+                                             4018100: 0.002})
+        self.assertEqual(self.trader.money, 1000_00 + 88_00)
+
     if __name__ == '__main__':
         unittest.main()
