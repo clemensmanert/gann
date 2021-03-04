@@ -119,7 +119,7 @@ class BrokerBitcoinDe:
             LOGGER.error("Failed to determine correct gained money %f seems "
                          "not to  be a correct", result)
             return False
-        return money
+        return int(money * 100)
 
     def try_buy(self, offer: Offer, amount: float):
         url = (self.API_URL + offer.trading_pair.value

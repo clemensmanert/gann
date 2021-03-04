@@ -76,7 +76,7 @@ class TestBrokerBitcoinDe(unittest.TestCase):
         self.assertEqual(actual, 0.0009)
 
     @mock.patch('requests.get', Mock(return_value=MockResponse(
-        200, {'trade': {'volume_currency_to_pay_after_fee': 90_00}})))
+        200, {'trade': {'volume_currency_to_pay_after_fee': 90.0}})))
     def test_gained_money_after_fees(self):
         actual = self.target.gained_money_after_fees(
             Offer(
@@ -148,7 +148,7 @@ class TestBrokerBitcoinDe(unittest.TestCase):
 
     @mock.patch('requests.post', Mock(return_value=MockResponse(201)))
     @mock.patch('requests.get', Mock(return_value=MockResponse(
-        200, {'trade': {'volume_currency_to_pay_after_fee': 99_90}})))
+        200, {'trade': {'volume_currency_to_pay_after_fee': 99.90}})))
     def test_try_sell_success(self):
         """Expect the recevied money (after fees) if a selling was
         successfull."""
