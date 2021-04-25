@@ -7,8 +7,8 @@ import logging
 import signal
 import sys
 import configparser
+import socketio
 
-from socketIO_client import SocketIO, LoggingNamespace
 from pathlib import Path
 
 from gann.trader import Trader
@@ -23,6 +23,26 @@ def stop_trader():
     print(" Exit request occured, exiting...")
     global continue_trader
     continue_trader = False
+
+class BitcoinDeNamespace(socketio.ClientNamespace):
+    def __init__(self, namespace, runner):
+        super().__init__(namespace)
+        self.runner = runner
+
+    def on_connect(self):
+        pass
+
+    def on_disconnect(self):
+        pass
+
+    def on_add_order(self, data):
+        self.runner.add_order(offer_bitcoin_de(data))
+
+    def on_remove_order(self, data):
+        pass
+
+    def on_refresh_express_option(self, data):
+        pass
 
 def main():
     global continue_trader
@@ -116,21 +136,19 @@ def main():
         depots.append(depotFile)
 
     if not any(traders):
-        print("No trader specification found in \"%s\"" % config_file)
+        print("No trader specification found in \"%s\"" % tradersFile)
 
     runner = TraderRunner(traders=traders,
                           depots=depots,
                           log=logFile)
 
-    target_socket = SocketIO('https://ws.bitcoin.de', 443, LoggingNamespace)
-    target_socket.on('add_order', lambda o: runner.add_order(
-        offer_bitcoin_de(o)))
-    target_socket.on('remove_order', runner.remove_order)
-    target_socket.on('refresh_express_option', runner.refresh_express_option)
+    sio = socketio.Client()
+    sio.connect('https://ws.bitcoin.de:443', namespaces=['/market'])
+    sio.register_namespace(BitcoinDeNamespace('/market', runner))
 
     while continue_trader:
         try:
-            target_socket.wait(seconds=3)
+            sio.wait()
             # Make sure executed trades gets actually written once in a while
             # Because if the trader gets stopped without the possibilty to
             # flush, the file might be empty.
