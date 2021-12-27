@@ -7,7 +7,7 @@ from typing import Dict
 from urllib.parse import urlencode
 import requests
 
-from gann.offer import Offer, OfferType
+from gann.offer import Offer, OfferType, PaymentOption
 
 LOGGER = logging.getLogger()
 class BrokerBitcoinDe:
@@ -122,11 +122,16 @@ class BrokerBitcoinDe:
         return int(money * 100)
 
     def try_buy(self, offer: Offer, amount: float):
+        # We can not make sepa bank transfers
+        if offer.payment_option == PaymentOption.SEPA_ONLY:
+            return False
+
         url = (self.API_URL + offer.trading_pair.value
                + "/trades/" + offer.order_id)
         data = {'type': "buy",
-                'payment_option': offer.payment_option.value,
+                'payment_option': PaymentOption.SEPA_ONLY.value,
                 'amount_currency_to_trade': amount}
+
         result = requests.post(url,
                                headers=self.post_headers(url, data),
                                data=data)
