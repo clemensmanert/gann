@@ -9,4 +9,5 @@ class TradingPair(Enum):
     BTGEUR = 'btgeur'
     LTCEUR = 'ltceur'
     XRPEUR = 'xrpeur'
+    DOGEEUR = 'dogeeur'
     UNKNOWN = 'unknown'
