@@ -1,38 +1,94 @@
 #!/usr/bin/env python3
 
-import sys
 import argparse
+import io
 
-import datetime
+from datetime import date
+from pathlib import Path
 
-from socketIO_client import SocketIO, LoggingNamespace
+import socketio
 
 from gann.offer import offer_bitcoin_de
 from gann.removal import removal_bitcoin_de
 from gann.serialization import serialize_offer_to, serialize_removal_to
 
+
+class Serializer(socketio.ClientNamespace):
+    target: Path
+    file_stream: io.BufferedWriter
+
+    def __init__(self, target: Path, namespace: str):
+        super().__init__(namespace)
+        self.target = target
+        self.generate_filename()
+
+    def generate_filename(self):
+        self.file_creation_date = date.today()
+
+        filename = date.today().strftime('%Y_%m_%d_sniffed')
+
+        file_path = self.target / filename
+        i = 1
+        while file_path.exists():
+            file_path = self.target / (filename + "_" + str(i))
+            i += 1
+
+        self.file_stream = file_path.open('ab')
+
+    def output(self):
+        if self.file_creation_date != date.today():
+            self.generate_filename()
+
+        return self.file_stream
+
+    def on_connect(self):
+        pass
+
+    def on_disconnect(self):
+        pass
+
+    def on_add_order(self, data):
+        serialize_offer_to(offer_bitcoin_de(data),
+                           self.output())
+
+    def on_remove_order(self, data):
+        serialize_removal_to(removal_bitcoin_de(data),
+                             self.output())
+
+    def on_refresh_express_option(self, data):
+        pass
+
+
 def main():
     parser = argparse.ArgumentParser(description="""Sniffer data about proposed
     offers from bitcoind.de.""")
 
-    parser.add_argument('--output', metavar='OUTPUT_FILE',
-                        type=argparse.FileType('ab'),
+    parser.add_argument('output',
+                        metavar='OUTPUT_FILE',
+                        type=str,
                         nargs=1,
-                        default='offers',
                         help='Where to store the sniffed offers.')
 
     args = parser.parse_args()
 
-    socketIO = SocketIO('https://ws.bitcoin.de', 443, LoggingNamespace)
+    target = Path(args.output[0])
 
-    socketIO.on('add_order', lambda *offer_args:(
-        serialize_offer_to(offer_bitcoin_de( offer_args[0]),
-                            args.output[0])))
-    socketIO.on('remove_order', lambda *offer_args: (
-        serialize_removal_to(removal_bitcoin_de(offer_args[0]),
-                              args.output[0] )))
+    if not target.exists():
+        target.mkdir()
 
-    socketIO.wait()
+    if not target.exists():
+        print("%s does not exist and can not be created" % target)
+        exit(1)
+
+    if not target.is_dir():
+        print("%s exists but is not a directory" % target)
+        exit(1)
+
+    sio = socketio.Client()
+    sio.connect('https://ws.bitcoin.de:443', namespaces=['/market'])
+    sio.register_namespace(Serializer(target, '/market'))
+    sio.wait()
+
 
 if __name__ == "__main__":
     main()
