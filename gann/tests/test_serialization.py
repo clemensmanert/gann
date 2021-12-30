@@ -65,6 +65,8 @@ class TestSerialisation(unittest.TestCase):
         expected = Removal("theId",
                            OfferType.BUY,
                            "reason",
+                           0,
+                           0.0,
                            date=datetime.now() - timedelta(days=2))
 
         removal_buffer = io.BytesIO()

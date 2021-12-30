@@ -43,8 +43,8 @@ PAYMENT_OPTIONS_BY_INDEXES = dict(zip(
 ))
 
 EVENT_TYPE_STRUCT = struct.Struct('i')
-REMOVAL_STRUCT = struct.Struct('6pi20pd')
 OFFER_STRUCT = struct.Struct('6pddiiidi')
+REMOVAL_STRUCT = struct.Struct('6pi20pidd')
 
 def deserialize_event(buffer):
     """Serializes the one event from the given buffer"""
@@ -69,10 +69,13 @@ def deserialize_removal(buffer):
     """Deserialze a removal by reading binary data from a given buffer."""
     removal_bin = REMOVAL_STRUCT.unpack(buffer)
     return Removal(
-        order_id=removal_bin[0].decode(),
-        offer_type=OFFER_TYPES_BY_INDEXES[removal_bin[1]],
-        reason=removal_bin[2].decode(),
-        date=datetime.fromtimestamp(removal_bin[3]))
+        order_id=removal_bin[0].decode()
+        , offer_type=OFFER_TYPES_BY_INDEXES[removal_bin[1]]
+        , reason=removal_bin[2].decode()
+        , price=removal_bin[3]
+        , amount=removal_bin[4]
+        , date=datetime.fromtimestamp(removal_bin[5])
+    )
 
 def serialize_offer(offer):
     """Serialize a given offer into binary."""
@@ -90,10 +93,13 @@ def serialize_removal(removal):
     """Serialize a given removal into binary."""
     return (EVENT_TYPE_STRUCT.pack(EVENT_TYPE.REMOVED.value)
             + REMOVAL_STRUCT.pack(
-                removal.order_id.encode(),
-                INDEXES_BY_OFFER_TYPES[removal.offer_type],
-                removal.reason.encode(),
-                removal.date.timestamp()))
+                removal.order_id.encode()
+                , INDEXES_BY_OFFER_TYPES[removal.offer_type]
+                , removal.reason.encode()
+                , removal.price
+                , removal.amount
+                , removal.date.timestamp())
+            )
 
 
 def serialize_offer_to(offer, buffer):
