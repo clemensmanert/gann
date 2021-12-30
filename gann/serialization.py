@@ -43,8 +43,8 @@ PAYMENT_OPTIONS_BY_INDEXES = dict(zip(
 ))
 
 EVENT_TYPE_STRUCT = struct.Struct('i')
-OFFER_STRUCT = struct.Struct('6pdddiidi')
 REMOVAL_STRUCT = struct.Struct('6pi20pd')
+OFFER_STRUCT = struct.Struct('6pddiiidi')
 
 def deserialize_event(buffer):
     """Serializes the one event from the given buffer"""
