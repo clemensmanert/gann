@@ -3,7 +3,7 @@
 import argparse
 import io
 
-from datetime import date
+from datetime import datetime, date
 from pathlib import Path
 
 import socketio
@@ -25,7 +25,7 @@ class Serializer(socketio.ClientNamespace):
     def generate_filename(self):
         self.file_creation_date = date.today()
 
-        filename = date.today().strftime('%Y_%m_%d_sniffed')
+        filename = datetime.now().strftime('sniffed_since_%F_%T')
 
         file_path = self.target / filename
         i = 1
