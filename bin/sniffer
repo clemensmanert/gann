@@ -28,6 +28,8 @@ class Serializer(socketio.ClientNamespace):
         filename = datetime.now().strftime('sniffed_since_%F_%T')
 
         file_path = self.target / filename
+
+        # Ensure unique filename
         i = 1
         while file_path.exists():
             file_path = self.target / (filename + "_" + str(i))
@@ -36,6 +38,7 @@ class Serializer(socketio.ClientNamespace):
         self.file_stream = file_path.open('ab')
 
     def output(self):
+        # Create a new log file every day
         if self.file_creation_date != date.today():
             self.generate_filename()
 
