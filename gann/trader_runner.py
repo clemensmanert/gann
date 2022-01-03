@@ -2,7 +2,7 @@ import logging
 import sys
 
 class TraderRunner:
-    """ Runs a trader and prints trading activity."""
+    """ Runs traders and persists their depots."""
     def __init__(self, traders=None, depots=None):
         self.traders = traders if traders is not None else list()
         self.depots = depots if depots is not None else list()
