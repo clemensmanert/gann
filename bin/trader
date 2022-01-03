@@ -79,10 +79,10 @@ def main():
         sys.exit(1)
 
     logPath = dataDir / "gann.log"
-    logFile = logPath.open(mode='a')
-    if not logFile:
-        print("Can not open '%s' for writing." % logPath, file=sys.stderr)
-        sys.exit(1)
+    logging.basicConfig(
+        filename=logPath
+        , level=logging.ERROR
+    )
 
     if 'api_key' not in tradersConfig['DEFAULT']:
         print("No api_key entry for bitcoin.de in trader config file found. "
@@ -139,8 +139,7 @@ def main():
         print("No trader specification found in \"%s\"" % tradersFile)
 
     runner = TraderRunner(traders=traders,
-                          depots=depots,
-                          log=logFile)
+                          depots=depots)
 
     sio = socketio.Client()
     sio.connect('https://ws.bitcoin.de:443', namespaces=['/market'])
@@ -160,7 +159,6 @@ def main():
 
     executedTradesFile.flush()
     executedTradesFile.close()
-    logFile.close()
 
     for depotFile in depots:
         depotFile.close()
