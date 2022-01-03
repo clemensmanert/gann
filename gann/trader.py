@@ -94,11 +94,9 @@ class Trader:
             LOGGER.info("Failed to buy %f of %s", gained_coins, offer)
             return False
 
-        LOGGER.info("Bought %i of %s", gained_coins, offer)
         self.money -= amount * offer.price
+        LOGGER.info("Bought %f of %s", gained_coins, offer)
         self.last_purchase_price = offer.price
-        LOGGER.info("%s Bought %f, money left: %i",
-                    offer, amount, self.money)
 
         if offer.price in self.depot:
             self.depot[offer.price] += gained_coins
