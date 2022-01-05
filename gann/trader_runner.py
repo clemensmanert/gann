@@ -1,3 +1,4 @@
+import json
 import logging
 import sys
 
@@ -18,8 +19,9 @@ class TraderRunner:
             depot = self.depots[i]
             if trader.process_offer(offer):
                 depot.seek(0)
-                depot.write(str({'money': trader.money,
-                                 'depot': trader.depot}))
+                depot.write(json.dumps(
+                    {"money": trader.money,
+                     "depot": trader.depot}))
                 # flush everythin else if previously written depot was larger.
                 depot.truncate()
                 depot.flush()
