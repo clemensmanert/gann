@@ -29,7 +29,7 @@ class MockResponse:
     Including status code and content."""
     def __init__(self, status_code:int = 200, content: Dict = None):
         self.status_code = status_code
-        self.content = json.dumps(content)
+        self.content = json.dumps(content).encode('utf-8')
 
 class TestBrokerBitcoinDe(unittest.TestCase):
 

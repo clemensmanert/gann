@@ -152,7 +152,8 @@ class BrokerBitcoinDe:
             return self.gained_coins_after_fees(offer)
 
         LOGGER.error("Failed to buy %f as %s (%i) %s",
-                     amount, offer, result.status_code, result.content)
+                     amount, offer, result.status_code,
+                     result.content.decode("utf-8"))
         return False
 
     def try_sell(self, offer: Offer, amount: float):
@@ -170,5 +171,6 @@ class BrokerBitcoinDe:
             return self.gained_money_after_fees(offer)
 
         LOGGER.error("Failed to sell %f as %s (%i) %s",
-                     amount, offer,result.status_code, result.content)
+                     amount, offer,result.status_code,
+                     result.content.decode("utf-8"))
         return False
