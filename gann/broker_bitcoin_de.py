@@ -3,6 +3,7 @@ import hmac
 import json
 import logging
 import time
+from enum import Enum, unique
 from typing import Dict
 from urllib.parse import urlencode
 import requests
@@ -10,6 +11,14 @@ import requests
 from gann.offer import Offer, OfferType, PaymentOption
 
 LOGGER = logging.getLogger()
+
+@unique
+class PaymentOptionTrade(Enum):
+  NA=0
+  EXPRESS=1
+  SEPA=2
+  SEPA_INSTANT=3
+
 class BrokerBitcoinDe:
     """A Broker to interact with the *bitcoin.de* market place."""
     API_URL = "https://api.bitcoin.de/v4/"
@@ -129,7 +138,7 @@ class BrokerBitcoinDe:
         url = (self.API_URL + offer.trading_pair.value
                + "/trades/" + offer.order_id)
         data = {'type': "buy",
-                'payment_option': PaymentOption.SEPA_ONLY.value,
+                'payment_option': PaymentOptionTrade.EXPRESS.value,
                 'amount_currency_to_trade': amount}
 
         result = requests.post(url,
