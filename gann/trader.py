@@ -1,6 +1,8 @@
 import logging
 import sys
 
+from threading import Lock
+
 from gann.offer import OfferType
 from gann.trader_conditions import TraderConditions
 
@@ -28,6 +30,9 @@ class Trader:
         # Set cheapest price for last bought item
         if any(self.depot):
             self.last_purchase_price = list(self.depot)[0]
+
+        self.buylock = Lock()
+        self.selllock = Lock()
 
     def consider_buy(self, offer):
         """Takes an offer and buy to it if it matches the configured conditions
@@ -201,11 +206,21 @@ class Trader:
             return False
 
         if offer.type == OfferType.BUY:
+            self.buylock.acquire()
+
             # Someone wants to buy coins
-            return self.consider_sell(offer)
+            result = self.consider_sell(offer)
+
+            self.buylock.release()
+            return result
         elif offer.type == OfferType.SELL:
+            self.selllock.acquire()
+
             # Someone wants to sell coins
-            return self.consider_buy(offer)
+            result = self.consider_buy(offer)
+
+            self.selllock.release()
+            return result
         return False
 
     def __str__(self):
