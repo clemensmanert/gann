@@ -12,7 +12,7 @@ class TraderRunner:
         """Progresses a given order"""
 
         if len(self.traders) != len(self.depots):
-            raise Exception("Trader and depot sizes do not machts")
+            raise Exception("Trader and depot sizes do not match.")
 
         for i in range(len(self.traders)):
             trader = self.traders[i]
