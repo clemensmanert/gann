@@ -43,36 +43,18 @@ class Trader:
             self.lowest_price_selling = offer.price
 
         if offer.price * offer.min_amount > self.conditions.max_price():
-            LOGGER.info("%s Don't buy because the min amount "
-                        "is too hight.", offer)
             return False
 
         if offer.price * offer.amount < self.conditions.min_price():
-            LOGGER.info("%s Don't buy because the amount is "
-                        "too small.", offer)
             return False
 
         if any(self.depot):
             if offer.price > (self.last_purchase_price
                               - self.conditions.step_price):
-
-                if offer.price > self.last_purchase_price:
-                    LOGGER.info("%s Don't buy because price is higher than "
-                                "the last purchase. %.2f", offer,
-                                self.last_purchase_price/100.0)
-                else:
-                    LOGGER.info("%s Don't buy because price is too close "
-                                "to the last purchase. %.2f", offer,
-                                self.last_purchase_price/100.0)
                 return False
         else:
             if offer.price > (self.highest_price_buying -
                               self.conditions.turnaround_price):
-                LOGGER.info("%s Don't buy because the turnaround %.2f has not "
-                            "been reached.",
-                            offer,
-                            (self.highest_price_buying
-                             - self.conditions.turnaround_price) / 100.0)
                 return False
 
         amount = self.conditions.amount_price / offer.price
@@ -89,11 +71,8 @@ class Trader:
             amount = offer.min_amount
 
         if amount * offer.price > self.money:
-            LOGGER.info("%s Don't buy because there is not enough money left.",
-                        offer)
             return False
 
-        LOGGER.info("Try to buy %f amount of %s", amount, offer)
         gained_coins = self.broker.try_buy(offer, amount)
         if not gained_coins:
             LOGGER.info("Failed to buy %f of %s", gained_coins, offer)
@@ -121,8 +100,6 @@ class Trader:
         prices = sorted(self.depot, reverse=True)
 
         if len(prices) < 1:
-            LOGGER.info("%s Don't sell because we have no position where we"
-                        " would  make profit.", offer)
             return False
 
         amount = 0
@@ -171,17 +148,9 @@ class Trader:
 
         # Exit if we do not have enough in depot to make a profitalbe deal
         if offer.min_amount > amount:
-            if amount == 0:
-                LOGGER.info("%s Don't sell because we have nothing to make "
-                            "profit.", offer)
-            else:
-                LOGGER.info("%s Don't sell because we only have %i "
-                            "to make profit.", offer, amount)
             return False
 
         if not enough_profit_reached:
-            LOGGER.info("%s Don't sell because profit too low. Initially paid "
-                        "%.2f", offer,  initial_spent / 100)
             return False
 
         gained_money = self.broker.try_sell(offer, amount)
