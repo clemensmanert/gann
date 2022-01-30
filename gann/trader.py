@@ -6,7 +6,7 @@ from threading import Lock
 from gann.offer import OfferType
 from gann.trader_conditions import TraderConditions
 
-LOGGER = logging.getLogger()
+log = logging.getLogger('gann')
 
 class Trader:
     """A trader which remebers the assets it baught and will sell them only to a
@@ -75,11 +75,11 @@ class Trader:
 
         gained_coins = self.broker.try_buy(offer, amount)
         if not gained_coins:
-            LOGGER.info("Failed to buy %f of %s", gained_coins, offer)
+            log.info("Failed to buy %f of %s", gained_coins, offer)
             return False
 
         self.money -= amount * offer.price
-        LOGGER.info("Bought %f of %s", gained_coins, offer)
+        log.info("Bought %f of %s", gained_coins, offer)
         self.last_purchase_price = offer.price
 
         if offer.price in self.depot:
@@ -155,10 +155,10 @@ class Trader:
 
         gained_money = self.broker.try_sell(offer, amount)
         if not gained_money:
-            LOGGER.info("Failed to sell %f of %s", amount, offer)
+            log.info("Failed to sell %f of %s", amount, offer)
             return False
 
-        LOGGER.info("Sold %f of %s for %f initial spent: %f", amount, offer,
+        log.info("Sold %f of %s for %f initial spent: %f", amount, offer,
                     gained_money/100, initial_spent)
         self.money += gained_money
 

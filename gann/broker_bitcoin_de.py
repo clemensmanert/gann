@@ -10,7 +10,7 @@ import requests
 
 from gann.offer import Offer, OfferType, PaymentOption
 
-LOGGER = logging.getLogger()
+log = logging.getLogger('gann')
 
 @unique
 class PaymentOptionTrade(Enum):
@@ -90,13 +90,13 @@ class BrokerBitcoinDe:
         result = requests.get(url, headers=self.get_headers(url))
 
         if result.status_code != 200:
-            LOGGER.error("Failed to get last trades coins amount due to %i: %s",
+            log.warning("Failed to get last trades coins amount due to %i: %s",
                          result.status_code,  result.content.decode("utf-8"))
             return False
         coins = float(json.loads(result.content)['trade']
                       ['amount_currency_to_trade_after_fee'])
         if coins  < 0 or coins > offer.amount:
-            LOGGER.error("Failed to determine gained coins. '%f' seems "
+            log.warning("Failed to determine gained coins. '%f' seems "
                          "not to be a correct value.", coins)
             return False
         return coins
@@ -117,7 +117,7 @@ class BrokerBitcoinDe:
         result = requests.get(url, headers=self.get_headers(url))
 
         if result.status_code != 200:
-            LOGGER.error("Failed to get last trades moiny after fees amount due"
+            log.warning("Failed to get last trades moiny after fees amount due"
                          " to %i: %s", result.status_code,
                          result.content.decode("utf-8"))
             return False
@@ -125,7 +125,7 @@ class BrokerBitcoinDe:
                       ['volume_currency_to_pay_after_fee'])
 
         if money < 0 or money > offer.price * offer.amount:
-            LOGGER.error("Failed to determine correct gained money %f seems "
+            log.warning("Failed to determine correct gained money %f seems "
                          "not to  be a correct", result)
             return False
         return int(money * 100)
@@ -151,7 +151,7 @@ class BrokerBitcoinDe:
                   file=self.trading_log)
             return self.gained_coins_after_fees(offer)
 
-        LOGGER.error("Failed to buy %f as %s (%i) %s",
+        log.warning("Failed to buy %f as %s (%i) %s",
                      amount, offer, result.status_code,
                      result.content.decode("utf-8"))
         return False
@@ -170,7 +170,7 @@ class BrokerBitcoinDe:
                   file=self.trading_log)
             return self.gained_money_after_fees(offer)
 
-        LOGGER.error("Failed to sell %f as %s (%i) %s",
+        log.warning("Failed to sell %f as %s (%i) %s",
                      amount, offer,result.status_code,
                      result.content.decode("utf-8"))
         return False

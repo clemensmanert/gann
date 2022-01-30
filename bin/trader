@@ -79,10 +79,12 @@ def main():
         sys.exit(1)
 
     logPath = dataDir / "gann.log"
-    logging.basicConfig(
-        filename=logPath
-        , level=logging.ERROR
-    )
+    log = logging.getLogger('gann')
+    handler = logging.FileHandler(logPath)
+    handler.setFormatter(
+        logging.Formatter('%(asctime)s %(levelname)s %(message)s'))
+    log.addHandler(handler)
+    log.setLevel(logging.INFO)
 
     if 'api_key' not in tradersConfig['DEFAULT']:
         print("No api_key entry for bitcoin.de in trader config file found. "
@@ -170,6 +172,8 @@ def main():
     sio.connect('https://ws.bitcoin.de:443', namespaces=['/market'])
     sio.register_namespace(BitcoinDeNamespace('/market', runner))
 
+    log.info("Traders started")
+
     while continue_trader:
         try:
             sio.wait()
@@ -188,7 +192,7 @@ def main():
     for depotFile in depots:
         depotFile.close()
 
-    print("\n\n Tear down successfull")
+    log.info("Traders successfully teared down")
 
 if __name__ == "__main__":
     main()
