@@ -60,7 +60,7 @@ class Trader:
         amount = self.conditions.amount_price / offer.price
 
         # Many platforms do not accept to obscure numbers.
-        amount = round(amount, 4)
+        amount = round(amount, self.conditions.decimals)
 
         # If rounding was higher or lower than amount/min_amount
         # use those values instead.

@@ -10,6 +10,7 @@ class TraderConditions:
                  min_profit_price=10_00,
                  step_price=10_00,
                  turnaround_price=10_00,
+                 decimals=4,
                  trading_pair=TradingPair.BTCEUR):
         """Conditions how the trader should respond to offers and sane defaults.
 
@@ -24,6 +25,8 @@ class TraderConditions:
         :param int turnaround_price: Specifies how much the price has to
                                      decline, until the trader should start
         buying again.
+        :param int decimals: Tell the trader to round desired couins to some
+                             decimal places, to produce not too obscure numbers.
         :param TradingPair trading_pair: Specifies the tradint pair, the trader
         should use.
         """
@@ -32,6 +35,7 @@ class TraderConditions:
         self.amount_price_tolerance = amount_price_tolerance
         self.step_price = step_price
         self.turnaround_price = turnaround_price
+        self.decimals = decimals
         self.trading_pair = trading_pair
 
         if isinstance(min_profit_price, str) and min_profit_price.endswith('%'):
