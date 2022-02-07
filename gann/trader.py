@@ -80,6 +80,7 @@ class Trader:
 
         self.money -= amount * offer.price
         log.info("Bought %f of %s", gained_coins, offer)
+        log.debug("Depot is now: %s", self.depot)
         self.last_purchase_price = offer.price
 
         if offer.price in self.depot:
@@ -159,7 +160,8 @@ class Trader:
             return False
 
         log.info("Sold %f of %s for %f initial spent: %f", amount, offer,
-                    gained_money/100, initial_spent)
+                    gained_money/100, int(initial_spent))
+        log.debug("Depot is now: %s", self.depot)
         self.money += gained_money
 
         for item in consumed:

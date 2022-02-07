@@ -84,7 +84,7 @@ def main():
     handler.setFormatter(
         logging.Formatter('%(asctime)s %(levelname)s %(message)s'))
     log.addHandler(handler)
-    log.setLevel(logging.INFO)
+    log.setLevel(logging.DEBUG)
 
     if 'api_key' not in tradersConfig['DEFAULT']:
         print("No api_key entry for bitcoin.de in trader config file found. "
