@@ -70,7 +70,7 @@ class TestBrokerBitcoinDe(unittest.TestCase):
                 amount=1,
                 min_amount=0.1,
                 price=100_00,
-                offer_type=OfferType.SELL,
+                type=OfferType.SELL,
                 trading_pair=TradingPair.BTGEUR))
 
         self.assertEqual(actual, 0.0009)
@@ -84,7 +84,7 @@ class TestBrokerBitcoinDe(unittest.TestCase):
                 amount=1,
                 min_amount=0.1,
                 price=100_00,
-                offer_type=OfferType.BUY,
+                type=OfferType.BUY,
                 trading_pair=TradingPair.BTGEUR))
 
         self.assertEqual(actual, 90_00)
@@ -101,7 +101,7 @@ class TestBrokerBitcoinDe(unittest.TestCase):
                 amount=1,
                 min_amount=0.1,
                 price=100_00,
-                offer_type=OfferType.SELL,
+                type=OfferType.SELL,
                 trading_pair=TradingPair.BTGEUR),
             amount=0.2)
 
@@ -120,7 +120,7 @@ class TestBrokerBitcoinDe(unittest.TestCase):
                 amount=1,
                 min_amount=0.1,
                 price=100_00,
-                offer_type=OfferType.SELL,
+                type=OfferType.SELL,
                 trading_pair=TradingPair.BTGEUR),
             amount=0.2)
 
@@ -139,7 +139,7 @@ class TestBrokerBitcoinDe(unittest.TestCase):
                 amount=1,
                 min_amount=0.1,
                 price=100_00,
-                offer_type=OfferType.BUY,
+                type=OfferType.BUY,
                 trading_pair=TradingPair.BTGEUR),
             amount=0.2)
 
@@ -159,7 +159,7 @@ class TestBrokerBitcoinDe(unittest.TestCase):
                 amount=1,
                 min_amount=0.1,
                 price=100_00,
-                offer_type=OfferType.BUY,
+                type=OfferType.BUY,
                 trading_pair=TradingPair.BTGEUR),
             amount=0.2)
 

@@ -59,7 +59,7 @@ def deserialize_offer(buffer):
         amount=offer_bin[1],
         min_amount=offer_bin[2],
         price=offer_bin[3],
-        offer_type=OFFER_TYPES_BY_INDEXES[offer_bin[4]],
+        type=OFFER_TYPES_BY_INDEXES[offer_bin[4]],
         trading_pair=TRADING_PAIRS_BY_INDEXES[offer_bin[5]],
         date=datetime.fromtimestamp(offer_bin[6]),
         payment_option=PAYMENT_OPTIONS_BY_INDEXES[offer_bin[7]]

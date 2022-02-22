@@ -31,7 +31,7 @@ class TestSerialisation(unittest.TestCase):
             amount=float(amount),
             min_amount=min_amount,
             price=price,
-            offer_type=offer_type,
+            type=offer_type,
             trading_pair=trading_pair,
             date=date)
 

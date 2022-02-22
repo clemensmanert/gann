@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import datetime
 
 from gann.offer import OfferType
@@ -15,13 +16,11 @@ def removal_bitcoin_de(removal_dict):
                     , int(removal_dict.get('price', 0) * 100)  # Euro vs cents
                     , removal_dict.get('amount', float('nan'))
                    )
-
+@dataclass(frozen=True)
 class Removal:
-    """Describes an offer, which has been removed"""
-    def __init__(self, order_id, offer_type, reason, price=0, amount=float('nan'),
-                 date=datetime.now()):
-        """Creates a removal.
+    """Describes an offer, which has been removed
 
+    Constructor arguments:
         :param str order_id: The order's id.
         :param OfferType oder_type: Indicates whether the offer creater
         wants to sell or buy.
@@ -30,34 +29,16 @@ class Removal:
         :param int price of the offer, can be null if it was not sold.
         :param float amount which was sol, can be null if it was not sold
         :param datetime date Point in time when the offer was removed.
-        """
-
-        self.order_id = order_id
-        self.offer_type = offer_type
-        self.reason = reason
-        self.price = price
-        self.amount = amount
-        self.date = date
+    """
+    order_id: str
+    offer_type: OfferType
+    reason: str
+    price: int = 0
+    amount: float = float('nan')
+    date: datetime = datetime.now()
 
     def __str__(self):
         return "Removal %s %4s %s" % (self.order_id,
                                      self.offer_type,
                                      self.reason)
 
-    def __eq__(self, other):
-        if other is None:
-            return False
-
-        if not isinstance(other, Removal):
-            return False
-
-        if self  is other:
-            return  True
-
-        return (self.order_id == other.order_id
-                and self.offer_type == other.offer_type
-                and self.reason == other.reason
-                and self.date == other.date
-                and self.price == other.price
-                and self.amount == other.amount
-                )

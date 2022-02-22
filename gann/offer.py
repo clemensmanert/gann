@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from datetime import datetime
 
 from enum import Enum, unique
@@ -36,12 +37,11 @@ def offer_bitcoin_de(offer_dict):
         list(PaymentOption)[int(offer_dict['payment_option'])]
     )
 
+@dataclass(frozen=True)
 class Offer:
-    """ An Offer to buy or sell coins. """
-    def __init__(self, order_id, amount, min_amount, price, offer_type,
-                 trading_pair, date=datetime.now(),
-                 payment_option=PaymentOption.NA):
-        """Creates an offer.
+    """ An Offer to buy or sell coins.
+
+    Constructor arguments:
         :param str order_id: The order's id.
         :param float amount: The amount of coins which is offerd/asked for.
         :param float min_amount: The minimum amount of coins the vendor is
@@ -53,39 +53,22 @@ class Offer:
         is about.
         :param datetime date: The point in time when the offer appeared.
         :param PaymentOption payment_option: The accepted option for this offer.
-        """
+    """
 
-        self.order_id = order_id
-        self.amount = amount
-        self.min_amount = min_amount
-        self.price = price
-        self.type = OfferType(offer_type)
-        self.trading_pair = TradingPair(trading_pair)
-        self.date = date
-        self.payment_option = payment_option
+    order_id: str
+    amount: float
+    min_amount: float
+    price: int
+    type: OfferType
+    trading_pair: TradingPair
+    date: datetime = datetime.now()
+    payment_option: PaymentOption = PaymentOption.NA
 
     def __str__(self):
         return "#%s %4s %10.6f(%10.6f) for %8.2f € of %s" % (self.order_id,
-                                                           self.type,
+                                                        self.type,
                                                         self.amount,
                                                         self.min_amount,
                                                         self.price/100.0,
                                                         self.trading_pair.value)
-    def __eq__(self, other):
-        if other is None:
-            return False
 
-        if self  is other:
-            return  True
-
-        if not isinstance(other, Offer):
-            return False
-
-        return (self.order_id == other.order_id and
-                self.amount == other.amount and
-                self.min_amount == other.min_amount and
-                self.price == other.price and
-                self.type == other.type and
-                self.trading_pair == other.trading_pair and
-                self.date == other.date and
-                self.payment_option == other.payment_option)
