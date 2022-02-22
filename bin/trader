@@ -108,15 +108,20 @@ def main():
         if section == 'DEFAULT':
             continue
         trader_conditions = TraderConditions(
-            tradersConfig.getint(section, 'amount_price', fallback=100_00),
-            tradersConfig.getint(section, 'amount_price_tolerance',
-                                 fallback=20_00),
-            tradersConfig.getint(section, 'min_profit_price', fallback=10_00),
-            tradersConfig.getint(section, 'step_price', fallback=40_00),
-            tradersConfig.getint(section, 'turnaround_price', fallback=10_00),
-            tradersConfig.getint(section, 'decimals', fallback=4),
-        TradingPair(
-            tradersConfig.get(section, 'trading_pair', fallback='btceur')))
+            amount_price=tradersConfig.getint(
+                section, 'amount_price', fallback=100_00),
+            amount_price_tolerance=tradersConfig.getint(
+                section, 'amount_price_tolerance', fallback=20_00),
+            min_profit_price=tradersConfig.getint(
+                section, 'min_profit_price', fallback=10_00),
+            step_price=tradersConfig.getint(
+                section, 'step_price', fallback=40_00),
+            turnaround_price=tradersConfig.getint(
+                section, 'turnaround_price', fallback=10_00),
+            decimals=tradersConfig.getint(
+                section, 'decimals', fallback=4),
+            trading_pair=TradingPair(
+                tradersConfig.get(section, 'trading_pair', fallback='btceur')))
 
         depotPath = dataDir / (section+'_depot.json')
         if not depotPath.exists():
