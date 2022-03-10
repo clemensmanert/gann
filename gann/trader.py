@@ -170,6 +170,11 @@ class Trader:
         if left_in_depot_amount > 0:
             self.depot[left_in_depot_price] = left_in_depot_amount
 
+        # Reset highest_price_buying, since prices a rising again
+        # And we do not want to go with the highest price of the last
+        # upper wave.
+        self.highest_price_buying = offer.price
+
         return True
 
     def process_offer(self, offer):
