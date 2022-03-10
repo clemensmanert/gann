@@ -137,7 +137,7 @@ class Trader:
             else:
                 initial_spent += self.depot[current_price] * current_price
 
-                # Check if we would make enough profit with the deal
+                # Leave if we couldn't make enough profit with the deal
                 if not self.conditions.enough(
                         amount + self.depot[current_price], offer,
                         initial_spent):
