@@ -112,8 +112,8 @@ def main():
                 section, 'amount_price', fallback=100_00),
             amount_price_tolerance=tradersConfig.getint(
                 section, 'amount_price_tolerance', fallback=20_00),
-            min_profit_price=tradersConfig.getint(
-                section, 'min_profit_price', fallback=10_00),
+            min_profit_str=tradersConfig.get(
+                section, 'min_profit_price', fallback='10_00'),
             step_price=tradersConfig.getint(
                 section, 'step_price', fallback=40_00),
             turnaround_price=tradersConfig.getint(

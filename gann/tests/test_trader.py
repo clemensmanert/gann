@@ -1,3 +1,4 @@
+import pretty_errors
 import unittest
 import logging
 import sys
@@ -280,14 +281,14 @@ class TestTrader(unittest.TestCase):
         self.assertEqual(self.trader.depot, {5000_00: 999.98})
 
     def test_profit_as_persentage_sell(self):
-        self.trader.conditions = TraderConditions(min_profit_price='10%')
+        self.trader.conditions = TraderConditions(min_profit_str='10%')
 
         self.trader.process_offer(self.offer(OfferType.BUY, 5500_00, 0.01))
         self.assertEqual(self.trader.depot, {})
         self.assertEqual(self.trader.money, 1000_00 + 5500)
 
     def test_profit_as_persentage_hold(self):
-        self.trader.conditions = TraderConditions(min_profit_price='10%')
+        self.trader.conditions = TraderConditions(min_profit_str='10%')
 
         self.trader.process_offer(self.offer(OfferType.BUY, 5400_00, 0.01))
         self.assertEqual(self.trader.depot, INTITIAL_DEPOT)
