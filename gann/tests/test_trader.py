@@ -1,4 +1,3 @@
-import pretty_errors
 import unittest
 import logging
 import sys
